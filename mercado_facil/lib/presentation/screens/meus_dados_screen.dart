@@ -14,6 +14,10 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
   final TextEditingController nomeController = TextEditingController(text: 'João da Silva');
   final TextEditingController emailController = TextEditingController(text: 'joao@email.com');
   final TextEditingController whatsappController = TextEditingController(text: '(11) 99999-9999');
+  final TextEditingController senhaAtualController = TextEditingController();
+  final TextEditingController novaSenhaController = TextEditingController();
+  final TextEditingController confirmarSenhaController = TextEditingController();
+  bool _mostrarAlterarSenha = false;
 
   File? _foto;
   String? _fotoUrl = 'https://randomuser.me/api/portraits/men/32.jpg';
@@ -124,6 +128,85 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[200],
+                          foregroundColor: Colors.black87,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _mostrarAlterarSenha = !_mostrarAlterarSenha;
+                            if (!_mostrarAlterarSenha) {
+                              senhaAtualController.clear();
+                              novaSenhaController.clear();
+                              confirmarSenhaController.clear();
+                            }
+                          });
+                        },
+                        icon: Icon(_mostrarAlterarSenha ? Icons.lock_open : Icons.lock),
+                        label: Text(_mostrarAlterarSenha ? 'Cancelar alteração' : 'Alterar senha'),
+                      ),
+                    ),
+                  ],
+                ),
+                if (_mostrarAlterarSenha) ...[
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: senhaAtualController,
+                    decoration: InputDecoration(
+                      labelText: 'Senha atual',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Digite sua senha atual';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: novaSenhaController,
+                    decoration: InputDecoration(
+                      labelText: 'Nova senha',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Digite a nova senha';
+                      }
+                      if (value.length < 6) {
+                        return 'Senha deve ter pelo menos 6 caracteres';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: confirmarSenhaController,
+                    decoration: InputDecoration(
+                      labelText: 'Confirmar nova senha',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Confirme a nova senha';
+                      }
+                      if (value != novaSenhaController.text) {
+                        return 'Senhas não coincidem';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
                 const SizedBox(height: 32),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(

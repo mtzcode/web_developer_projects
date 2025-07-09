@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../data/services/produtos_service.dart';
 import '../widgets/produto_card.dart';
+import '../widgets/cache_status_widget.dart';
 import '../../core/theme/app_theme.dart';
 import 'dart:math';
 import 'package:provider/provider.dart';
@@ -47,25 +48,13 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
   @override
   void initState() {
     super.initState();
-    final produtos = ProdutosService.getProdutos();
-    categorias = ['Todos'];
-    categorias.addAll(produtos.map((p) => p.categoria ?? '').toSet().where((c) => c.isNotEmpty));
-    // Inicializa faixa de preço
-    final precos = produtos.map((p) => p.precoPromocional ?? p.preco).toList();
-    _precoRangeMin = precos.reduce((a, b) => a < b ? a : b);
-    _precoRangeMax = precos.reduce((a, b) => a > b ? a : b);
-    _precoMin = _precoRangeMin;
-    _precoMax = _precoRangeMax;
+    _inicializarCategorias();
     _searchFocusNode.addListener(() {
       setState(() {
         _showSuggestions = _searchFocusNode.hasFocus;
       });
     });
-    // Simula carregamento
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _loading = false);
-    });
-    _carregarMaisProdutos();
+    _carregarProdutosIniciais();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_carregandoMais && _temMaisProdutos) {
         _carregarMaisProdutos();
@@ -73,9 +62,122 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
     });
   }
 
+  Future<void> _inicializarCategorias() async {
+    final produtos = await ProdutosService.carregarProdutosComCache();
+    setState(() {
+      categorias = ['Todos'];
+      categorias.addAll(produtos.map((p) => p.categoria ?? '').toSet().where((c) => c.isNotEmpty));
+      
+      // Inicializa faixa de preço
+      final precos = produtos.map((p) => p.precoPromocional ?? p.preco).toList();
+      if (precos.isNotEmpty) {
+        _precoRangeMin = precos.reduce((a, b) => a < b ? a : b);
+        _precoRangeMax = precos.reduce((a, b) => a > b ? a : b);
+        _precoMin = _precoRangeMin;
+        _precoMax = _precoRangeMax;
+      }
+    });
+  }
+
+  Future<void> _carregarProdutosIniciais() async {
+    setState(() => _loading = true);
+    
+    try {
+      final produtos = await ProdutosService.carregarProdutosComCache();
+      setState(() {
+        _produtosExibidos = produtos;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() => _loading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar produtos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _atualizarProdutos() async {
+    try {
+      final produtos = await ProdutosService.carregarProdutosComCache(forcarAtualizacao: true);
+      setState(() {
+        _produtosExibidos = produtos;
+        _paginaAtual = 1;
+        _temMaisProdutos = true;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Produtos atualizados com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao atualizar produtos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _mostrarInfoCache(Map<String, dynamic> cacheInfo) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Informações do Cache'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Status: ${cacheInfo['valido'] ? 'Válido' : 'Expirado'}'),
+            const SizedBox(height: 8),
+            Text('Produtos em cache: ${cacheInfo['quantidadeProdutos']}'),
+            if (cacheInfo['ultimaAtualizacao'] != null) ...[
+              const SizedBox(height: 8),
+              Text('Última atualização: ${_formatarData(cacheInfo['ultimaAtualizacao'])}'),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fechar'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _atualizarProdutos();
+            },
+            child: const Text('Atualizar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatarData(DateTime data) {
+    return '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year} às ${data.hour.toString().padLeft(2, '0')}:${data.minute.toString().padLeft(2, '0')}';
+  }
+
   void _selecionarCategoria(int index) {
     setState(() {
       _categoriaSelecionada = index;
+      // Conecta a seleção de categoria com o filtro
+      if (index == 0) {
+        _categoriaFiltro = null; // "Todos"
+      } else {
+        _categoriaFiltro = categorias[index];
+      }
     });
     _scrollToCategoria(index);
   }
@@ -93,16 +195,34 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
 
   Future<void> _carregarMaisProdutos() async {
     setState(() => _carregandoMais = true);
-    final novos = await ProdutosService.getProdutosPaginados(page: _paginaAtual, pageSize: 8);
-    setState(() {
-      if (novos.isEmpty) {
-        _temMaisProdutos = false;
-      } else {
-        _produtosExibidos.addAll(novos);
-        _paginaAtual++;
+    
+    try {
+      final novos = await ProdutosService.getProdutosPaginados(
+        page: _paginaAtual, 
+        pageSize: 8,
+        forcarAtualizacao: false, // Usa cache se disponível
+      );
+      
+      setState(() {
+        if (novos.isEmpty) {
+          _temMaisProdutos = false;
+        } else {
+          _produtosExibidos.addAll(novos);
+          _paginaAtual++;
+        }
+        _carregandoMais = false;
+      });
+    } catch (e) {
+      setState(() => _carregandoMais = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar mais produtos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
-      _carregandoMais = false;
-    });
+    }
   }
 
   @override
@@ -122,10 +242,15 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
       final matchCategoria = _categoriaFiltro == null || (produto.categoria == _categoriaFiltro);
       final preco = produto.precoPromocional ?? produto.preco;
       final matchPreco = preco >= _precoMin && preco <= _precoMax;
-      final matchOferta = !_filtrarOferta || (produto.destaque == 'oferta');
-      final matchNovo = !_filtrarNovo || (produto.destaque == 'novo');
-      final matchMaisVendido = !_filtrarMaisVendido || (produto.destaque == 'mais vendido');
-      return matchNome && matchCategoria && matchPreco && matchOferta && matchNovo && matchMaisVendido;
+      // Lógica corrigida para filtros múltiplos: se nenhum filtro está ativo, mostra todos
+      // se algum filtro está ativo, mostra apenas os que atendem aos filtros ativos
+      bool matchDestaque = true;
+      if (_filtrarOferta || _filtrarNovo || _filtrarMaisVendido) {
+        matchDestaque = (_filtrarOferta && produto.destaque == 'oferta') ||
+                       (_filtrarNovo && produto.destaque == 'novo') ||
+                       (_filtrarMaisVendido && produto.destaque == 'mais vendido');
+      }
+      return matchNome && matchCategoria && matchPreco && matchDestaque;
     }).toList();
 
     return Scaffold(
@@ -141,6 +266,24 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
           ),
         ),
         actions: [
+          // Indicador de cache
+          FutureBuilder<Map<String, dynamic>>(
+            future: ProdutosService.getCacheInfo(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!['temCache']) {
+                return IconButton(
+                  icon: Icon(
+                    snapshot.data!['valido'] ? Icons.cloud_done : Icons.cloud_off,
+                    color: snapshot.data!['valido'] ? Colors.green : Colors.orange,
+                  ),
+                  onPressed: () {
+                    _mostrarInfoCache(snapshot.data!);
+                  },
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
           Consumer<CarrinhoProvider>(
             builder: (context, carrinho, child) {
               int quantidade = carrinho.itens.fold(0, (soma, item) => soma + item.quantidade);
@@ -160,7 +303,7 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: colorScheme.primary,
+                          color: Colors.red,
                           shape: BoxShape.circle,
                         ),
                         constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
@@ -385,12 +528,17 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
           ],
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Barra de pesquisa + botão de filtros
-            Row(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Força atualização do cache
+          await _atualizarProdutos();
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // Barra de pesquisa + botão de filtros
+              Row(
               children: [
                 Expanded(
                   child: Stack(
@@ -665,6 +813,8 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
                 ),
               ],
             ),
+            // Widget de status do cache
+            const CacheStatusWidget(),
             const SizedBox(height: 15),
             // Lista horizontal de categorias
             SizedBox(
@@ -735,6 +885,7 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
