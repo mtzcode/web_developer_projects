@@ -12,6 +12,7 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
   final _formKey = GlobalKey<FormState>();
   String nome = '';
   String email = '';
+  String whatsapp = '';
   String senha = '';
 
   Future<bool> _onWillPop() async {
@@ -134,6 +135,24 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     decoration: InputDecoration(
+                      labelText: 'WhatsApp',
+                      labelStyle: TextStyle(color: colorScheme.tertiary),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    keyboardType: TextInputType.phone,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Digite seu WhatsApp';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) => whatsapp = value ?? '',
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    decoration: InputDecoration(
                       labelText: 'Senha',
                       labelStyle: TextStyle(color: colorScheme.tertiary),
                       border: OutlineInputBorder(
@@ -161,6 +180,7 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                         Navigator.pushNamed(context, '/cadastro02', arguments: {
                           'nome': nome,
                           'email': email,
+                          'whatsapp': whatsapp,
                           'senha': senha,
                         });
                       }

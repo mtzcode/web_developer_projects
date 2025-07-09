@@ -226,11 +226,19 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
             ),
             // Itens de navegação principais
             ListTile(
-              leading: const Icon(Icons.storefront),
-              title: const Text('Produtos'),
+              leading: const Icon(Icons.person),
+              title: const Text('Meus Dados'),
               onTap: () {
                 Navigator.pop(context);
-                // Já está na tela de produtos
+                Navigator.pushNamed(context, '/perfil');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.location_on),
+              title: const Text('Endereços'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/enderecos');
               },
             ),
             ListTile(
@@ -336,24 +344,6 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
                     builder: (context) => OfertasScreen(produtos: _produtosExibidos),
                   ),
                 );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('Meus Dados'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navegar para a tela de dados do usuário
-                // Navigator.pushNamed(context, '/perfil');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.location_on),
-              title: const Text('Endereços'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navegar para a tela de endereços
-                // Navigator.pushNamed(context, '/enderecos');
               },
             ),
             ListTile(

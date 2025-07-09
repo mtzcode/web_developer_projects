@@ -8,6 +8,8 @@ import 'presentation/screens/splash_produtos_screen.dart';
 import 'presentation/screens/produtos_screen.dart';
 import 'presentation/screens/carrinho_screen.dart';
 import 'presentation/screens/notificacoes_screen.dart';
+import 'presentation/screens/enderecos_screen.dart';
+import 'presentation/screens/meus_dados_screen.dart';
 import 'data/services/carrinho_provider.dart';
 
 void main() {
@@ -35,6 +37,8 @@ class MyApp extends StatelessWidget {
           '/produtos': (context) => const ProdutosScreen(),
           '/carrinho': (context) => const CarrinhoScreen(),
           '/notificacoes': (context) => const NotificacoesScreen(),
+          '/enderecos': (context) => const EnderecosScreen(),
+          '/perfil': (context) => const MeusDadosScreen(),
         },
       ),
     );
