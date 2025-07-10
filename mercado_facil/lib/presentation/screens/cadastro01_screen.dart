@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants.dart';
+import '../../data/services/auth_service.dart';
+import '../../data/services/firestore_service.dart';
 
 class Cadastro01Screen extends StatefulWidget {
   const Cadastro01Screen({super.key});
@@ -10,10 +12,14 @@ class Cadastro01Screen extends StatefulWidget {
 
 class _Cadastro01ScreenState extends State<Cadastro01Screen> {
   final _formKey = GlobalKey<FormState>();
+  final _authService = AuthService();
+  final _firestoreService = FirestoreService();
+  
   String nome = '';
   String email = '';
   String whatsapp = '';
   String senha = '';
+  bool isLoading = false;
 
   Future<bool> _onWillPop() async {
     final colorScheme = Theme.of(context).colorScheme;
@@ -45,6 +51,48 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
         ],
       ),
     ) ?? false;
+  }
+
+  Future<void> _proximoPasso() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    _formKey.currentState!.save();
+    setState(() => isLoading = true);
+
+    try {
+      // Criar usuário no Firebase Auth
+      final userCredential = await _authService.createUserWithEmailAndPassword(
+        email.trim(),
+        senha,
+      );
+
+      // Atualizar display name do usuário
+      await _authService.updateUserProfile(displayName: nome);
+
+      if (mounted) {
+        // Navegar para a próxima tela, passando os dados
+        Navigator.pushNamed(context, '/cadastro02', arguments: {
+          'userId': userCredential.user!.uid,
+          'nome': nome,
+          'email': email,
+          'whatsapp': whatsapp,
+          'senha': senha, // Não vamos salvar a senha no Firestore
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   @override
@@ -165,7 +213,7 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                         return 'Digite sua senha';
                       }
                       if (value.length < 6) {
-                        return 'Senha muito curta';
+                        return 'Senha deve ter pelo menos 6 caracteres';
                       }
                       return null;
                     },
@@ -173,18 +221,7 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        // Navegar para a próxima tela, passando os dados
-                        Navigator.pushNamed(context, '/cadastro02', arguments: {
-                          'nome': nome,
-                          'email': email,
-                          'whatsapp': whatsapp,
-                          'senha': senha,
-                        });
-                      }
-                    },
+                    onPressed: isLoading ? null : _proximoPasso,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.primary,
                       foregroundColor: Colors.white,
@@ -193,10 +230,19 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Próximo',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'Próximo',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
                   ),
                 ],
               ),

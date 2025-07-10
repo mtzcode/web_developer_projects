@@ -34,11 +34,12 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Mercado Fácil',
         theme: AppTheme.lightTheme,
-        initialRoute: '/',
+        home: const AuthWrapper(),
         routes: {
-          '/': (context) => const LoginScreen(),
+          '/login': (context) => const LoginScreen(),
           '/cadastro01': (context) => const Cadastro01Screen(),
           '/cadastro02': (context) => const Cadastro02Screen(),
+          '/home': (context) => const SplashProdutosScreen(),
           '/splash_produtos': (context) => const SplashProdutosScreen(),
           '/produtos': (context) => const ProdutosScreen(),
           '/carrinho': (context) => const CarrinhoScreen(),
@@ -48,6 +49,35 @@ class MyApp extends StatelessWidget {
           '/firebase_test': (context) => const FirebaseTestScreen(),
         },
       ),
+    );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: context.read<AuthService>().authStateChanges,
+      builder: (context, snapshot) {
+        // Verificando se há dados de autenticação
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        // Se o usuário está logado, vai para a tela principal
+        if (snapshot.hasData && snapshot.data != null) {
+          return const SplashProdutosScreen();
+        }
+
+        // Se não está logado, vai para a tela de login
+        return const LoginScreen();
+      },
     );
   }
 } 

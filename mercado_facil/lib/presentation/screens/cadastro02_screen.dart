@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../core/constants.dart';
+import '../../data/services/firestore_service.dart';
 
 class Cadastro02Screen extends StatefulWidget {
   const Cadastro02Screen({super.key});
@@ -12,6 +13,7 @@ class Cadastro02Screen extends StatefulWidget {
 
 class _Cadastro02ScreenState extends State<Cadastro02Screen> {
   final _formKey = GlobalKey<FormState>();
+  final _firestoreService = FirestoreService();
   final TextEditingController cepController = TextEditingController();
   final TextEditingController enderecoController = TextEditingController();
   final TextEditingController numeroController = TextEditingController();
@@ -20,7 +22,14 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
   final TextEditingController ufController = TextEditingController();
 
   bool isLoading = false;
+  bool isSaving = false;
   String lastCepSearched = '';
+  
+  // Dados do usuário vindos da tela anterior
+  String? userId;
+  String? nome;
+  String? email;
+  String? whatsapp;
 
   Future<void> buscarEndereco(String cep) async {
     setState(() { isLoading = true; });
@@ -49,6 +58,19 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
   void initState() {
     super.initState();
     cepController.addListener(_onCepChanged);
+    
+    // Recuperar dados passados da tela anterior
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null) {
+        setState(() {
+          userId = args['userId'];
+          nome = args['nome'];
+          email = args['email'];
+          whatsapp = args['whatsapp'];
+        });
+      }
+    });
   }
 
   void _onCepChanged() {
@@ -101,6 +123,68 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
         ],
       ),
     ) ?? false;
+  }
+
+  Future<void> _finalizarCadastro() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erro: Dados do usuário não encontrados'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => isSaving = true);
+
+    try {
+      // Preparar dados do usuário para salvar no Firestore
+      final userData = {
+        'nome': nome,
+        'email': email,
+        'whatsapp': whatsapp,
+        'endereco': {
+          'cep': cepController.text,
+          'logradouro': enderecoController.text,
+          'numero': numeroController.text,
+          'bairro': bairroController.text,
+          'complemento': complementoController.text,
+          'uf': ufController.text,
+        },
+        'dataCadastro': DateTime.now().toIso8601String(),
+        'ativo': true,
+      };
+
+      // Salvar dados do usuário no Firestore
+      await _firestoreService.salvarUsuario(userId!, userData);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cadastro realizado com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navegar para a tela principal
+        Navigator.pushReplacementNamed(context, '/splash_produtos');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao finalizar cadastro: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isSaving = false);
+      }
+    }
   }
 
   @override
@@ -276,12 +360,7 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // Após finalizar, navegar para a splash de produtos
-                        Navigator.pushReplacementNamed(context, '/splash_produtos');
-                      }
-                    },
+                    onPressed: isSaving ? null : _finalizarCadastro,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.primary,
                       foregroundColor: Colors.white,
@@ -290,10 +369,19 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Finalizar',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
+                    child: isSaving
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'Finalizar',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
                   ),
                 ],
               ),
