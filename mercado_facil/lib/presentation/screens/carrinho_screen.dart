@@ -9,9 +9,7 @@ class CarrinhoScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final carrinhoProvider = Provider.of<CarrinhoProvider>(context);
-    final carrinho = carrinhoProvider.itens;
-    final total = carrinhoProvider.total;
-
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Carrinho'),
@@ -19,196 +17,207 @@ class CarrinhoScreen extends StatelessWidget {
         backgroundColor: colorScheme.primary,
         foregroundColor: Colors.white,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: carrinho.isEmpty
-            ? Center(
-                child: Text(
-                  'Seu carrinho está vazio! 🛒',
-                  style: TextStyle(fontSize: 18, color: colorScheme.secondary),
-                ),
-              )
-            : Column(
-                children: [
-                  Expanded(
-                    child: ListView.separated(
-                      itemCount: carrinho.length,
-                      separatorBuilder: (_, __) => const Divider(),
-                      itemBuilder: (context, index) {
-                        final item = carrinho[index];
-                        return Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                item.produto.imagemUrl,
-                                width: 60,
-                                height: 60,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 60,
-                                    height: 60,
-                                    color: colorScheme.tertiary.withOpacity(0.15),
-                                    child: Icon(
-                                      Icons.image,
-                                      color: colorScheme.tertiary,
-                                      size: 32,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.produto.nome,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: colorScheme.secondary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'R\$ ${item.produto.preco.toStringAsFixed(2)}',
-                                    style: TextStyle(
-                                      color: colorScheme.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // Botões de quantidade
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.remove_circle_outline),
-                                  color: colorScheme.primary,
-                                  onPressed: () {
-                                    carrinhoProvider.alterarQuantidade(item.produto, item.quantidade - 1);
-                                  },
-                                ),
-                                Text(
-                                  '${item.quantidade}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.add_circle_outline),
-                                  color: colorScheme.primary,
-                                  onPressed: () {
-                                    carrinhoProvider.alterarQuantidade(item.produto, item.quantidade + 1);
-                                  },
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'R\$ ${(item.subtotal).toStringAsFixed(2)}',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            // Ícone de lixeira
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline),
-                              color: Colors.red,
-                              onPressed: () {
-                                carrinhoProvider.removerProduto(item.produto);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '${item.produto.nome} removido do carrinho!',
-                                      style: const TextStyle(color: Colors.white),
-                                    ),
-                                    backgroundColor: colorScheme.primary,
+      body: StreamBuilder<List<CarrinhoItem>>(
+        stream: carrinhoProvider.carrinhoStream(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Erro ao carregar carrinho', style: TextStyle(color: Colors.red)));
+          }
+          final carrinho = snapshot.data ?? [];
+          final total = carrinho.fold(0.0, (soma, item) => soma + item.subtotal);
+
+          if (carrinho.isEmpty) {
+            return Center(
+              child: Text(
+                'Seu carrinho está vazio! 🛒',
+                style: TextStyle(fontSize: 18, color: colorScheme.secondary),
+              ),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: carrinho.length,
+                    separatorBuilder: (_, __) => const Divider(),
+                    itemBuilder: (context, index) {
+                      final item = carrinho[index];
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              item.produto.imagemUrl,
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 60,
+                                  height: 60,
+                                  color: colorScheme.tertiary.withOpacity(0.15),
+                                  child: Icon(
+                                    Icons.image,
+                                    color: colorScheme.tertiary,
+                                    size: 32,
                                   ),
                                 );
                               },
                             ),
-                          ],
-                        );
-                      },
-                    ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.produto.nome,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: colorScheme.secondary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'R\$ ${item.produto.preco.toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Botões de quantidade
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle_outline),
+                                color: colorScheme.primary,
+                                onPressed: () {
+                                  carrinhoProvider.alterarQuantidade(item.produto, item.quantidade - 1);
+                                },
+                              ),
+                              Text(
+                                '${item.quantidade}',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.add_circle_outline),
+                                color: colorScheme.primary,
+                                onPressed: () {
+                                  carrinhoProvider.alterarQuantidade(item.produto, item.quantidade + 1);
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'R\$ ${(item.subtotal).toStringAsFixed(2)}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          // Ícone de lixeira
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline),
+                            color: Colors.red,
+                            onPressed: () {
+                              carrinhoProvider.removerProduto(item.produto);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${item.produto.nome} removido do carrinho!',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor: colorScheme.primary,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    },
                   ),
-                  const SizedBox(height: 16),
-                  // Resumo do pedido
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _ResumoLinha(
-                          titulo: 'Subtotal',
-                          valor: carrinhoProvider.total,
-                        ),
-                        _ResumoLinha(
-                          titulo: 'Frete',
-                          valor: 7.90,
-                        ),
-                        _ResumoLinha(
-                          titulo: 'Desconto',
-                          valor: -5.00,
-                          valorCor: Colors.green,
-                        ),
-                        const Divider(height: 24),
-                        _ResumoLinha(
-                          titulo: 'Total',
-                          valor: carrinhoProvider.total + 7.90 - 5.00,
-                          isTotal: true,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Total:',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.secondary),
-                      ),
-                      Text(
-                        'R\$ ${total.toStringAsFixed(2)}',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.primary),
+                ),
+                const SizedBox(height: 16),
+                // Resumo do pedido
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: carrinho.isEmpty ? null : () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _ResumoLinha(
+                        titulo: 'Subtotal',
+                        valor: total,
                       ),
-                      child: const Text('Finalizar compra'),
-                    ),
+                      _ResumoLinha(
+                        titulo: 'Frete',
+                        valor: 7.90,
+                      ),
+                      _ResumoLinha(
+                        titulo: 'Desconto',
+                        valor: -5.00,
+                        valorCor: Colors.green,
+                      ),
+                      const Divider(height: 24),
+                      _ResumoLinha(
+                        titulo: 'Total',
+                        valor: total + 7.90 - 5.00,
+                        isTotal: true,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total:',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.secondary),
+                    ),
+                    Text(
+                      'R\$ ${total.toStringAsFixed(2)}',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.primary),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: carrinho.isEmpty ? null : () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.primary,
+                    ),
+                    child: const Text('Finalizar Pedido'),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../../core/constants.dart';
+import 'package:provider/provider.dart';
+import '../../data/services/user_provider.dart';
+import '../../data/services/endereco_service.dart';
 
 class EnderecosScreen extends StatefulWidget {
   const EnderecosScreen({super.key});
@@ -20,19 +20,33 @@ class _EnderecosScreenState extends State<EnderecosScreen> {
   final TextEditingController ufController = TextEditingController();
 
   bool isLoading = false;
+  bool isSaving = false;
   String lastCepSearched = '';
+  final EnderecoService _enderecoService = EnderecoService();
 
-  // Mock: dados iniciais do usuário (substitua por dados reais depois)
   @override
   void initState() {
     super.initState();
-    cepController.text = '01001000';
-    enderecoController.text = 'Praça da Sé';
-    numeroController.text = '100';
-    bairroController.text = 'Sé';
-    complementoController.text = '';
-    ufController.text = 'SP';
+    _carregarEnderecoUsuario();
     cepController.addListener(_onCepChanged);
+  }
+
+  Future<void> _carregarEnderecoUsuario() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.carregarUsuarioLogado();
+    
+    final usuario = userProvider.usuarioLogado;
+    if (usuario != null && usuario.endereco != null) {
+      final endereco = usuario.endereco!;
+      setState(() {
+        cepController.text = endereco['cep'] ?? '';
+        enderecoController.text = endereco['logradouro'] ?? '';
+        numeroController.text = endereco['numero'] ?? '';
+        bairroController.text = endereco['bairro'] ?? '';
+        complementoController.text = endereco['complemento'] ?? '';
+        ufController.text = endereco['uf'] ?? '';
+      });
+    }
   }
 
   void _onCepChanged() {
@@ -57,25 +71,87 @@ class _EnderecosScreenState extends State<EnderecosScreen> {
 
   Future<void> buscarEndereco(String cep) async {
     setState(() { isLoading = true; });
-    final url = Uri.parse('https://viacep.com.br/ws/$cep/json/');
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['erro'] == true) {
+    
+    try {
+      final endereco = await _enderecoService.buscarEnderecoPorCep(cep);
+      
+      if (endereco != null) {
+        setState(() {
+          enderecoController.text = endereco.logradouro;
+          bairroController.text = endereco.bairro;
+          ufController.text = endereco.uf;
+        });
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('CEP não encontrado!')),
+          const SnackBar(
+            content: Text('Endereço encontrado!'),
+            backgroundColor: Colors.green,
+          ),
         );
       } else {
-        enderecoController.text = data['logradouro'] ?? '';
-        bairroController.text = data['bairro'] ?? '';
-        ufController.text = data['uf'] ?? '';
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('CEP não encontrado!'),
+            backgroundColor: Colors.orange,
+          ),
+        );
       }
-    } else {
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erro ao buscar CEP!')),
+        SnackBar(
+          content: Text('Erro ao buscar CEP: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
+    } finally {
+      setState(() { isLoading = false; });
     }
-    setState(() { isLoading = false; });
+  }
+
+  Future<void> _salvarEndereco() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() => isSaving = true);
+    
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      
+      final dadosEndereco = {
+        'endereco': {
+          'cep': cepController.text,
+          'logradouro': enderecoController.text,
+          'numero': numeroController.text,
+          'bairro': bairroController.text,
+          'complemento': complementoController.text,
+          'uf': ufController.text,
+        },
+        'dataAtualizacao': DateTime.now().toIso8601String(),
+      };
+      
+      await userProvider.atualizarDadosUsuario(dadosEndereco);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Endereço atualizado com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao atualizar endereço: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isSaving = false);
+      }
+    }
   }
 
   @override
@@ -245,15 +321,18 @@ class _EnderecosScreenState extends State<EnderecosScreen> {
                     minimumSize: const Size.fromHeight(48),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Endereço atualizado!')),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.save),
-                  label: const Text('Salvar endereço'),
+                  onPressed: isSaving ? null : _salvarEndereco,
+                  icon: isSaving 
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Icon(Icons.save),
+                  label: Text(isSaving ? 'Salvando...' : 'Salvar endereço'),
                 ),
                 const SizedBox(height: 24),
               ],

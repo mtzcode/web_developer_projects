@@ -4,10 +4,9 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../data/services/produtos_service.dart';
 import '../widgets/produto_card.dart';
 import '../widgets/cache_status_widget.dart';
-import '../../core/theme/app_theme.dart';
-import 'dart:math';
 import 'package:provider/provider.dart';
 import '../../data/services/carrinho_provider.dart';
+import '../../data/services/user_provider.dart';
 import '../../data/models/produto.dart';
 import 'ofertas_screen.dart';
 
@@ -49,6 +48,7 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
   void initState() {
     super.initState();
     _inicializarCategorias();
+    _carregarDadosUsuario();
     _searchFocusNode.addListener(() {
       setState(() {
         _showSuggestions = _searchFocusNode.hasFocus;
@@ -60,6 +60,11 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
         _carregarMaisProdutos();
       }
     });
+  }
+
+  Future<void> _carregarDadosUsuario() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.carregarUsuarioLogado();
   }
 
   Future<void> _inicializarCategorias() async {
@@ -330,42 +335,52 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
           padding: EdgeInsets.zero,
           children: [
             // DrawerHeader substituído por cabeçalho de usuário
-            Container(
-              color: colorScheme.primary,
-              padding: const EdgeInsets.only(top: 32, bottom: 20, left: 16, right: 16),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 32,
-                    backgroundImage: NetworkImage('https://randomuser.me/api/portraits/men/32.jpg'),
-                    backgroundColor: Colors.white,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'João da Silva',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+            Consumer<UserProvider>(
+              builder: (context, userProvider, child) {
+                final usuario = userProvider.usuarioLogado;
+                return Container(
+                  color: colorScheme.primary,
+                  padding: const EdgeInsets.only(top: 32, bottom: 20, left: 16, right: 16),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 32,
+                        backgroundImage: usuario?.fotoUrl != null 
+                          ? NetworkImage(usuario!.fotoUrl!)
+                          : null,
+                        backgroundColor: Colors.white,
+                        child: usuario?.fotoUrl == null 
+                          ? Icon(Icons.person, size: 32, color: colorScheme.primary)
+                          : null,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              usuario?.nome ?? 'Usuário',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              usuario?.email ?? 'email@exemplo.com',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          'joao@email.com',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
             // Itens de navegação principais
             ListTile(
@@ -520,8 +535,10 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Sair'),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
+                final userProvider = Provider.of<UserProvider>(context, listen: false);
+                await userProvider.fazerLogout();
                 Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
               },
             ),

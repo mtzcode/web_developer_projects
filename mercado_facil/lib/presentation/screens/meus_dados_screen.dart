@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
+import '../../data/services/user_provider.dart';
 
 class MeusDadosScreen extends StatefulWidget {
   const MeusDadosScreen({super.key});
@@ -11,16 +13,38 @@ class MeusDadosScreen extends StatefulWidget {
 
 class _MeusDadosScreenState extends State<MeusDadosScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController nomeController = TextEditingController(text: 'João da Silva');
-  final TextEditingController emailController = TextEditingController(text: 'joao@email.com');
-  final TextEditingController whatsappController = TextEditingController(text: '(11) 99999-9999');
+  final TextEditingController nomeController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController whatsappController = TextEditingController();
   final TextEditingController senhaAtualController = TextEditingController();
   final TextEditingController novaSenhaController = TextEditingController();
   final TextEditingController confirmarSenhaController = TextEditingController();
   bool _mostrarAlterarSenha = false;
+  bool _isLoading = false;
 
   File? _foto;
-  String? _fotoUrl = 'https://randomuser.me/api/portraits/men/32.jpg';
+  String? _fotoUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarDadosUsuario();
+  }
+
+  Future<void> _carregarDadosUsuario() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.carregarUsuarioLogado();
+    
+    final usuario = userProvider.usuarioLogado;
+    if (usuario != null) {
+      setState(() {
+        nomeController.text = usuario.nome;
+        emailController.text = usuario.email;
+        whatsappController.text = usuario.whatsapp;
+        _fotoUrl = usuario.fotoUrl;
+      });
+    }
+  }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -30,6 +54,46 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
         _foto = File(pickedFile.path);
         _fotoUrl = null;
       });
+    }
+  }
+  Future<void> _salvarDados() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      
+      final dadosAtualizados = {
+        'nome': nomeController.text.trim(),
+        'email': emailController.text.trim(),
+        'whatsapp': whatsappController.text.trim(),
+        'dataAtualizacao': DateTime.now().toIso8601String(),
+      };
+      
+      await userProvider.atualizarDadosUsuario(dadosAtualizados);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Dados atualizados com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao atualizar dados: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -215,15 +279,18 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                     minimumSize: const Size.fromHeight(48),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Dados atualizados!')),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.save),
-                  label: const Text('Salvar dados'),
+                  onPressed: _isLoading ? null : _salvarDados,
+                  icon: _isLoading 
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Icon(Icons.save),
+                  label: Text(_isLoading ? 'Salvando...' : 'Salvar dados'),
                 ),
                 const SizedBox(height: 24),
               ],

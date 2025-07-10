@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../../core/constants.dart';
 import '../../data/services/firestore_service.dart';
+import '../../data/services/endereco_service.dart';
 
 class Cadastro02Screen extends StatefulWidget {
   const Cadastro02Screen({super.key});
@@ -14,6 +12,7 @@ class Cadastro02Screen extends StatefulWidget {
 class _Cadastro02ScreenState extends State<Cadastro02Screen> {
   final _formKey = GlobalKey<FormState>();
   final _firestoreService = FirestoreService();
+  final _enderecoService = EnderecoService();
   final TextEditingController cepController = TextEditingController();
   final TextEditingController enderecoController = TextEditingController();
   final TextEditingController numeroController = TextEditingController();
@@ -24,6 +23,7 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
   bool isLoading = false;
   bool isSaving = false;
   String lastCepSearched = '';
+  String? lastEnderecoSource; // 'cache' ou 'api'
   
   // Dados do usuário vindos da tela anterior
   String? userId;
@@ -33,25 +33,40 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
 
   Future<void> buscarEndereco(String cep) async {
     setState(() { isLoading = true; });
-    final url = Uri.parse('https://viacep.com.br/ws/$cep/json/');
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['erro'] == true) {
+    try {
+      final endereco = await _enderecoService.buscarEnderecoPorCep(cep);
+      if (endereco != null) {
+        setState(() {
+          enderecoController.text = endereco.logradouro;
+          bairroController.text = endereco.bairro;
+          ufController.text = endereco.uf;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('CEP não encontrado!')),
+          const SnackBar(
+            content: Text('Endereço encontrado!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
         );
       } else {
-        enderecoController.text = data['logradouro'] ?? '';
-        bairroController.text = data['bairro'] ?? '';
-        ufController.text = data['uf'] ?? '';
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('CEP não encontrado!'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
       }
-    } else {
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erro ao buscar CEP!')),
+        SnackBar(
+          content: Text('Erro ao buscar CEP: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
+    } finally {
+      setState(() { isLoading = false; });
     }
-    setState(() { isLoading = false; });
   }
 
   @override
@@ -62,6 +77,7 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
     // Recuperar dados passados da tela anterior
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      
       if (args != null) {
         setState(() {
           userId = args['userId'];
@@ -125,7 +141,7 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
     ) ?? false;
   }
 
-  Future<void> _finalizarCadastro() async {
+  Future<void> _salvarEndereco() async {
     if (!_formKey.currentState!.validate()) return;
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -159,6 +175,8 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
 
       // Salvar dados do usuário no Firestore
       await _firestoreService.salvarUsuario(userId!, userData);
+      // Atualizar cadastroCompleto para true
+      await _firestoreService.salvarUsuario(userId!, {'cadastroCompleto': true});
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -190,26 +208,19 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final double horizontalPadding = MediaQuery.of(context).size.width > 500 ? 120 : 32;
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(appName),
+          title: const Text('Mercado Fácil'),
           centerTitle: true,
           backgroundColor: colorScheme.primary,
           foregroundColor: Colors.white,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
-              if (await _onWillPop()) {
-                Navigator.of(context).pop();
-              }
-            },
-          ),
         ),
         body: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: Form(
               key: _formKey,
               child: Column(
@@ -249,10 +260,10 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                               child: SizedBox(
                                 width: 16,
                                 height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(strokeWidth: 2, semanticsLabel: 'Carregando'),
                               ),
                             )
-                          : null,
+                          : Icon(Icons.location_on, semanticLabel: 'Ícone de localização'),
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
@@ -278,6 +289,7 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
+                            prefixIcon: Icon(Icons.home, semanticLabel: 'Ícone de endereço'),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -298,11 +310,60 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
+                            prefixIcon: Icon(Icons.confirmation_number, semanticLabel: 'Ícone de número'),
                           ),
-                          keyboardType: TextInputType.number,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Nº';
+                              return 'Digite o número';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: TextFormField(
+                          controller: bairroController,
+                          decoration: InputDecoration(
+                            labelText: 'Bairro',
+                            labelStyle: TextStyle(color: colorScheme.tertiary),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: Icon(Icons.location_city, semanticLabel: 'Ícone de bairro'),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Digite o bairro';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 1,
+                        child: TextFormField(
+                          controller: ufController,
+                          decoration: InputDecoration(
+                            labelText: 'UF',
+                            labelStyle: TextStyle(color: colorScheme.tertiary),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: Icon(Icons.flag, semanticLabel: 'Ícone de UF'),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Digite a UF';
+                            }
+                            if (value.length != 2) {
+                              return 'UF deve ter 2 letras';
                             }
                             return null;
                           },
@@ -312,77 +373,39 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
-                    controller: bairroController,
-                    decoration: InputDecoration(
-                      labelText: 'Bairro',
-                      labelStyle: TextStyle(color: colorScheme.tertiary),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Digite o bairro';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
                     controller: complementoController,
                     decoration: InputDecoration(
-                      labelText: 'Complemento (opcional)',
+                      labelText: 'Complemento',
                       labelStyle: TextStyle(color: colorScheme.tertiary),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      prefixIcon: Icon(Icons.edit_location_alt, semanticLabel: 'Ícone de complemento'),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: ufController,
-                    decoration: InputDecoration(
-                      labelText: 'UF',
-                      labelStyle: TextStyle(color: colorScheme.tertiary),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Digite o UF';
-                      }
-                      if (value.length != 2) {
-                        return 'UF deve ter 2 letras';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: isSaving ? null : _finalizarCadastro,
+                  const SizedBox(height: 32),
+                  ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.primary,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      minimumSize: const Size.fromHeight(48),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: isSaving
+                    onPressed: isSaving ? null : _salvarEndereco,
+                    icon: isSaving
                         ? const SizedBox(
-                            height: 20,
                             width: 20,
+                            height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              semanticsLabel: 'Carregando',
                             ),
                           )
-                        : const Text(
-                            'Finalizar',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                        : const Icon(Icons.save, semanticLabel: 'Salvar endereço'),
+                    label: Text(isSaving ? 'Salvando...' : 'Salvar endereço'),
                   ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/services/auth_service.dart';
-import '../../core/theme/app_theme.dart';
-import 'firebase_test_screen.dart';
+import '../../data/services/firestore_auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,22 +14,56 @@ class _LoginScreenState extends State<LoginScreen> {
   String senha = '';
   bool obscureText = true;
   bool isLoading = false;
-  final _authService = AuthService();
+  final _authService = FirestoreAuthService();
+
+  // Regex para validação de email
+  static final RegExp _emailRegex = RegExp(
+    r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
+  );
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    _formKey.currentState!.save();
     setState(() => isLoading = true);
+    
     try {
-      await _authService.signInWithEmailAndPassword(email.trim(), senha);
+      await _authService.fazerLogin(email.trim(), senha);
+      
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/splash_produtos');
       }
     } catch (e) {
       if (mounted) {
+        String mensagemErro = 'Erro ao fazer login';
+        
+        // Tratamento específico de erros do Firebase
+        if (e.toString().contains('user-not-found')) {
+          mensagemErro = 'Usuário não encontrado. Verifique seu e-mail.';
+        } else if (e.toString().contains('wrong-password')) {
+          mensagemErro = 'Senha incorreta. Tente novamente.';
+        } else if (e.toString().contains('invalid-email')) {
+          mensagemErro = 'E-mail inválido.';
+        } else if (e.toString().contains('user-disabled')) {
+          mensagemErro = 'Conta desabilitada. Entre em contato com o suporte.';
+        } else if (e.toString().contains('too-many-requests')) {
+          mensagemErro = 'Muitas tentativas. Tente novamente em alguns minutos.';
+        } else if (e.toString().contains('network')) {
+          mensagemErro = 'Erro de conexão. Verifique sua internet.';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text(mensagemErro),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
+            ),
           ),
         );
       }
@@ -40,71 +72,102 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _recuperarSenha() async {
+    Navigator.pushNamed(context, '/redefinir_senha');
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final double horizontalPadding = MediaQuery.of(context).size.width > 500 ? 120 : 32;
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Icon(
-                  Icons.shopping_cart,
-                  size: 80,
-                  color: colorScheme.primary,
+                // Logo/Ícone
+                Semantics(
+                  label: 'Logo do Mercado Fácil',
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.shopping_cart,
+                      size: 60,
+                      color: colorScheme.primary,
+                      semanticLabel: 'Carrinho de compras',
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 24),
+                // Título
                 Text(
-                  'Entrar',
+                  'Bem-vindo de volta!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: colorScheme.secondary,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 8),
+                Text(
+                  'Faça login para continuar',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: colorScheme.tertiary,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                // Campo Email
                 TextFormField(
                   decoration: InputDecoration(
                     labelText: 'E-mail',
+                    hintText: 'exemplo@email.com',
                     labelStyle: TextStyle(color: colorScheme.tertiary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: colorScheme.tertiary!),
                     ),
-                    prefixIcon: Icon(Icons.email, color: colorScheme.tertiary),
+                    prefixIcon: Icon(Icons.email, color: colorScheme.tertiary, semanticLabel: 'Ícone de e-mail'),
                   ),
                   keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Digite seu e-mail';
                     }
-                    if (!value.contains('@')) {
-                      return 'E-mail inválido';
+                    if (!_emailRegex.hasMatch(value.trim())) {
+                      return 'Digite um e-mail válido';
                     }
                     return null;
                   },
-                  onChanged: (value) => email = value,
+                  onSaved: (value) => email = value?.trim() ?? '',
                 ),
                 const SizedBox(height: 16),
+                // Campo Senha
                 TextFormField(
                   decoration: InputDecoration(
                     labelText: 'Senha',
+                    hintText: 'Digite sua senha',
                     labelStyle: TextStyle(color: colorScheme.tertiary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: colorScheme.tertiary!),
                     ),
-                    prefixIcon: Icon(Icons.lock, color: colorScheme.tertiary),
+                    prefixIcon: Icon(Icons.lock, color: colorScheme.tertiary, semanticLabel: 'Ícone de senha'),
                     suffixIcon: IconButton(
                       icon: Icon(
                         obscureText ? Icons.visibility_off : Icons.visibility,
                         color: colorScheme.tertiary,
+                        semanticLabel: obscureText ? 'Mostrar senha' : 'Ocultar senha',
                       ),
                       onPressed: () {
                         setState(() {
@@ -118,14 +181,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Digite sua senha';
                     }
-                    if (value.length < 6) {
-                      return 'Senha muito curta';
-                    }
                     return null;
                   },
-                  onChanged: (value) => senha = value,
+                  onSaved: (value) => senha = value ?? '',
+                ),
+                const SizedBox(height: 8),
+                // Link "Esqueceu a senha?"
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: isLoading ? null : _recuperarSenha,
+                    child: Text(
+                      'Esqueceu a senha?',
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 24),
+                // Botão Entrar
                 ElevatedButton(
                   onPressed: isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
@@ -143,6 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            semanticsLabel: 'Carregando',
                           ),
                         )
                       : const Text(
@@ -150,67 +227,38 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                 ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () {
+                const SizedBox(height: 24),
+                // Divisor
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: colorScheme.tertiary)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'ou',
+                        style: TextStyle(color: colorScheme.tertiary),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: colorScheme.tertiary)),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                // Botão Cadastrar
+                OutlinedButton(
+                  onPressed: isLoading ? null : () {
                     Navigator.pushNamed(context, '/cadastro01');
                   },
-                  child: Text(
-                    'Não é cadastrado? Crie Agora!',
-                    style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    if (email.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Digite seu e-mail para recuperar a senha.'),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                      return;
-                    }
-                    try {
-                      await _authService.sendPasswordResetEmail(email.trim());
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Email de recuperação enviado!'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(e.toString()),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  },
-                  child: Text(
-                    'Esqueceu a senha?',
-                    style: TextStyle(color: colorScheme.tertiary),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/firebase_test');
-                  },
-                  icon: const Icon(Icons.bug_report, size: 18),
-                  label: const Text('Teste Firebase'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.orange,
-                    side: const BorderSide(color: Colors.orange),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    foregroundColor: colorScheme.primary,
+                    side: BorderSide(color: colorScheme.primary),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                  ),
+                  child: const Text(
+                    'Criar nova conta',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],

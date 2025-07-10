@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_app_check/firebase_app_check.dart';
 import 'core/theme/app_theme.dart';
+import 'presentation/widgets/auth_wrapper.dart';
 import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/cadastro01_screen.dart';
 import 'presentation/screens/cadastro02_screen.dart';
@@ -11,13 +13,24 @@ import 'presentation/screens/carrinho_screen.dart';
 import 'presentation/screens/notificacoes_screen.dart';
 import 'presentation/screens/enderecos_screen.dart';
 import 'presentation/screens/meus_dados_screen.dart';
-import 'presentation/screens/firebase_test_screen.dart';
+import 'presentation/screens/redefinir_senha_screen.dart';
 import 'data/services/carrinho_provider.dart';
-import 'data/services/auth_service.dart';
+import 'data/services/firestore_auth_service.dart';
+import 'data/services/user_provider.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  // Configurar AppCheck (desabilitado temporariamente para debug)
+  // await FirebaseAppCheck.instance.activate(
+  //   androidProvider: AndroidProvider.debug,
+  //   appleProvider: AppleProvider.debug,
+  // );
+
   runApp(const MyApp());
 }
 
@@ -28,8 +41,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => CarrinhoProvider()),
-        Provider<AuthService>(create: (_) => AuthService()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        Provider<FirestoreAuthService>(create: (_) => FirestoreAuthService()),
+        ProxyProvider<UserProvider, CarrinhoProvider>(
+          update: (context, userProvider, previous) {
+            final userId = userProvider.usuarioLogado?.id;
+            if (userId != null) {
+              return CarrinhoProvider(userId: userId);
+            } else {
+              // Retorna um provider "vazio" se não estiver logado
+              return CarrinhoProvider(userId: '');
+            }
+          },
+        ),
       ],
       child: MaterialApp(
         title: 'Mercado Fácil',
@@ -46,38 +70,9 @@ class MyApp extends StatelessWidget {
           '/notificacoes': (context) => const NotificacoesScreen(),
           '/enderecos': (context) => const EnderecosScreen(),
           '/perfil': (context) => const MeusDadosScreen(),
-          '/firebase_test': (context) => const FirebaseTestScreen(),
+          '/redefinir_senha': (context) => const RedefinirSenhaScreen(),
         },
       ),
-    );
-  }
-}
-
-class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: context.read<AuthService>().authStateChanges,
-      builder: (context, snapshot) {
-        // Verificando se há dados de autenticação
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-
-        // Se o usuário está logado, vai para a tela principal
-        if (snapshot.hasData && snapshot.data != null) {
-          return const SplashProdutosScreen();
-        }
-
-        // Se não está logado, vai para a tela de login
-        return const LoginScreen();
-      },
     );
   }
 } 
