@@ -150,6 +150,23 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+                // Botão temporário para teste do Firebase
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/firebase_test');
+                  },
+                  icon: const Icon(Icons.bug_report, size: 18),
+                  label: const Text('Teste Firebase'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.orange,
+                    side: const BorderSide(color: Colors.orange),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

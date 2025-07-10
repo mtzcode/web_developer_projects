@@ -45,4 +45,50 @@ class Produto {
       favorito: favorito ?? this.favorito,
     );
   }
+
+  // Converter Produto para Map (para salvar no Firestore)
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'nome': nome,
+      'preco': preco,
+      'imagemUrl': imagemUrl,
+      'descricao': descricao,
+      'categoria': categoria,
+      'destaque': destaque,
+      'precoPromocional': precoPromocional,
+      'favorito': favorito,
+    };
+  }
+
+  // Criar Produto a partir de Map (para carregar do Firestore)
+  factory Produto.fromMap(Map<String, dynamic> map) {
+    return Produto(
+      id: map['id'] ?? '',
+      nome: map['nome'] ?? '',
+      preco: (map['preco'] ?? 0.0).toDouble(),
+      imagemUrl: map['imagemUrl'] ?? '',
+      descricao: map['descricao'],
+      categoria: map['categoria'],
+      destaque: map['destaque'],
+      precoPromocional: map['precoPromocional'] != null 
+          ? (map['precoPromocional'] as num).toDouble() 
+          : null,
+      favorito: map['favorito'] ?? false,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'Produto(id: $id, nome: $nome, preco: $preco, categoria: $categoria)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Produto && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 } 

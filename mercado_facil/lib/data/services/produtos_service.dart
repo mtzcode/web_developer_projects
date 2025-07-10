@@ -1,9 +1,13 @@
 import '../models/produto.dart';
 import 'cache_service.dart';
 import 'memory_cache_service.dart';
+import 'firestore_service.dart';
 
 class ProdutosService {
-  static List<Produto> getProdutos() {
+  static final FirestoreService _firestoreService = FirestoreService();
+
+  // Dados mock para fallback
+  static List<Produto> getProdutosMock() {
     return [
       Produto(
         id: '1',
@@ -79,7 +83,7 @@ class ProdutosService {
     ];
   }
 
-  // Carrega produtos com cache inteligente
+  // Carrega produtos com cache inteligente e Firestore
   static Future<List<Produto>> carregarProdutosComCache({bool forcarAtualizacao = false}) async {
     try {
       // Se não forçar atualização, tenta carregar do cache primeiro
@@ -110,9 +114,9 @@ class ProdutosService {
         }
       }
 
-      // Se não tem cache válido ou forçou atualização, carrega da API
-      print('Carregando produtos da API...');
-      final produtos = await _carregarProdutosDaAPI();
+      // Se não tem cache válido ou forçou atualização, carrega do Firestore
+      print('Carregando produtos do Firestore...');
+      final produtos = await _carregarProdutosDoFirestore();
       
       // Salva no cache local (tenta, mas não falha se der erro)
       if (produtos.isNotEmpty) {
@@ -153,21 +157,25 @@ class ProdutosService {
       
       // Último fallback: dados mock
       print('Usando dados mock como fallback');
-      return getProdutos();
+      return getProdutosMock();
     }
   }
 
-  // Simula carregamento da API
-  static Future<List<Produto>> _carregarProdutosDaAPI() async {
-    // Simula delay de rede
-    await Future.delayed(const Duration(milliseconds: 1000));
-    
-    // Simula possível erro de rede (10% de chance)
-    if (DateTime.now().millisecond % 10 == 0) {
-      throw Exception('Erro de conexão simulado');
+  // Carrega produtos do Firestore
+  static Future<List<Produto>> _carregarProdutosDoFirestore() async {
+    try {
+      final produtosData = await _firestoreService.getProdutos();
+      
+      if (produtosData.isEmpty) {
+        print('Nenhum produto encontrado no Firestore, usando dados mock');
+        return getProdutosMock();
+      }
+
+      return produtosData;
+    } catch (e) {
+      print('Erro ao carregar produtos do Firestore: $e');
+      throw e;
     }
-    
-    return getProdutos();
   }
 
   static Future<List<Produto>> getProdutosPaginados({required int page, int pageSize = 8, bool forcarAtualizacao = false}) async {
@@ -176,6 +184,44 @@ class ProdutosService {
     if (start >= todos.length) return [];
     final end = (start + pageSize) > todos.length ? todos.length : (start + pageSize);
     return todos.sublist(start, end);
+  }
+
+  // Buscar produtos por categoria
+  static Future<List<Produto>> getProdutosPorCategoria(String categoria, {bool forcarAtualizacao = false}) async {
+    try {
+      final produtos = await carregarProdutosComCache(forcarAtualizacao: forcarAtualizacao);
+      return produtos.where((produto) => produto.categoria == categoria).toList();
+    } catch (e) {
+      print('Erro ao buscar produtos por categoria: $e');
+      return [];
+    }
+  }
+
+  // Buscar produtos por nome
+  static Future<List<Produto>> buscarProdutos(String query, {bool forcarAtualizacao = false}) async {
+    try {
+      final produtos = await carregarProdutosComCache(forcarAtualizacao: forcarAtualizacao);
+      final queryLower = query.toLowerCase();
+      
+      return produtos.where((produto) => 
+        produto.nome.toLowerCase().contains(queryLower) ||
+        (produto.categoria?.toLowerCase()?.contains(queryLower) ?? false)
+      ).toList();
+    } catch (e) {
+      print('Erro ao buscar produtos: $e');
+      return [];
+    }
+  }
+
+  // Buscar produtos em destaque
+  static Future<List<Produto>> getProdutosDestaque({bool forcarAtualizacao = false}) async {
+    try {
+      final produtos = await carregarProdutosComCache(forcarAtualizacao: forcarAtualizacao);
+      return produtos.where((produto) => produto.destaque != null).toList();
+    } catch (e) {
+      print('Erro ao buscar produtos em destaque: $e');
+      return [];
+    }
   }
 
   // Método para atualizar favoritos no cache
@@ -214,6 +260,34 @@ class ProdutosService {
     } catch (e) {
       print('Erro ao obter info do cache local: $e');
       return MemoryCacheService.getCacheInfo();
+    }
+  }
+
+  // Migrar dados mock para Firestore
+  static Future<void> migrarDadosMock() async {
+    try {
+      print('Iniciando migração de dados mock para Firestore...');
+      final produtosMock = getProdutosMock();
+      
+      for (final produto in produtosMock) {
+        await _firestoreService.adicionarProduto(produto.toMap());
+      }
+      
+      print('Migração concluída com sucesso!');
+    } catch (e) {
+      print('Erro na migração: $e');
+      throw e;
+    }
+  }
+
+  // Limpar todos os produtos do Firestore
+  static Future<void> limparProdutosFirestore() async {
+    try {
+      await _firestoreService.limparProdutos();
+      print('Produtos removidos do Firestore');
+    } catch (e) {
+      print('Erro ao limpar produtos: $e');
+      throw e;
     }
   }
 } 

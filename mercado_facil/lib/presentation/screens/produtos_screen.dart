@@ -615,7 +615,7 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
                                 padding: EdgeInsets.zero,
                                 children: [
                                   if (_searchQuery.isNotEmpty)
-                                    ...ProdutosService.getProdutos()
+                                    ...ProdutosService.getProdutosMock()
                                         .where((p) => p.nome.toLowerCase().contains(_searchQuery.toLowerCase()))
                                         .map((p) => ListTile(
                                               title: Text(p.nome),

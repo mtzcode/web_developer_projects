@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/cadastro01_screen.dart';
@@ -10,9 +11,13 @@ import 'presentation/screens/carrinho_screen.dart';
 import 'presentation/screens/notificacoes_screen.dart';
 import 'presentation/screens/enderecos_screen.dart';
 import 'presentation/screens/meus_dados_screen.dart';
+import 'presentation/screens/firebase_test_screen.dart';
 import 'data/services/carrinho_provider.dart';
+import 'data/services/auth_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -24,9 +29,10 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => CarrinhoProvider()),
+        Provider<AuthService>(create: (_) => AuthService()),
       ],
       child: MaterialApp(
-        title: 'Supermercado App',
+        title: 'Mercado Fácil',
         theme: AppTheme.lightTheme,
         initialRoute: '/',
         routes: {
@@ -39,6 +45,7 @@ class MyApp extends StatelessWidget {
           '/notificacoes': (context) => const NotificacoesScreen(),
           '/enderecos': (context) => const EnderecosScreen(),
           '/perfil': (context) => const MeusDadosScreen(),
+          '/firebase_test': (context) => const FirebaseTestScreen(),
         },
       ),
     );
