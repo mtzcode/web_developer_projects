@@ -155,10 +155,8 @@ class _ProdutoCardState extends State<ProdutoCard> {
                       SizedBox(
                         width: double.infinity,
                         height: 44,
-                        child: ElevatedButton.icon(
+                        child: ElevatedButton(
                           onPressed: widget.onAdicionarAoCarrinho,
-                          icon: const Icon(Icons.shopping_cart),
-                          label: const Text('Adicionar ao carrinho'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.produtoButtonColor,
                             foregroundColor: Colors.white,
@@ -167,6 +165,7 @@ class _ProdutoCardState extends State<ProdutoCard> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
+                          child: const Text('Adicionar ao carrinho'),
                         ),
                       ),
                     ],
@@ -297,10 +296,8 @@ class _ProdutoCardState extends State<ProdutoCard> {
                               child: SizedBox(
                                 width: double.infinity,
                                 height: 36,
-                                child: ElevatedButton.icon(
+                                child: ElevatedButton(
                                   onPressed: widget.onAdicionarAoCarrinho,
-                                  icon: const Icon(Icons.shopping_cart, size: 18),
-                                  label: const Text('Adicionar'),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppTheme.produtoButtonColor,
                                     foregroundColor: Colors.white,
@@ -311,6 +308,7 @@ class _ProdutoCardState extends State<ProdutoCard> {
                                     textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                                     padding: const EdgeInsets.symmetric(vertical: 8),
                                   ),
+                                  child: const Text('Adicionar'),
                                 ),
                               ),
                             ),

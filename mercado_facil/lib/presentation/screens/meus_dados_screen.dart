@@ -196,7 +196,7 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: ElevatedButton.icon(
+                      child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey[200],
                           foregroundColor: Colors.black87,
@@ -212,8 +212,7 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                             }
                           });
                         },
-                        icon: Icon(_mostrarAlterarSenha ? Icons.lock_open : Icons.lock),
-                        label: Text(_mostrarAlterarSenha ? 'Cancelar alteração' : 'Alterar senha'),
+                        child: Text(_mostrarAlterarSenha ? 'Cancelar alteração' : 'Alterar senha'),
                       ),
                     ),
                   ],
@@ -272,7 +271,7 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                   ),
                 ],
                 const SizedBox(height: 32),
-                ElevatedButton.icon(
+                ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: Colors.white,
@@ -280,7 +279,7 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: _isLoading ? null : _salvarDados,
-                  icon: _isLoading 
+                  child: _isLoading 
                     ? const SizedBox(
                         width: 20,
                         height: 20,
@@ -289,8 +288,7 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Icon(Icons.save),
-                  label: Text(_isLoading ? 'Salvando...' : 'Salvar dados'),
+                    : const Text('Salvar dados'),
                 ),
                 const SizedBox(height: 24),
               ],

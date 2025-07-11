@@ -263,7 +263,7 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                                 child: CircularProgressIndicator(strokeWidth: 2, semanticsLabel: 'Carregando'),
                               ),
                             )
-                          : Icon(Icons.location_on, semanticLabel: 'Ícone de localização'),
+                          : null,
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
@@ -289,7 +289,6 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            prefixIcon: Icon(Icons.home, semanticLabel: 'Ícone de endereço'),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -310,7 +309,6 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            prefixIcon: Icon(Icons.confirmation_number, semanticLabel: 'Ícone de número'),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -335,7 +333,6 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            prefixIcon: Icon(Icons.location_city, semanticLabel: 'Ícone de bairro'),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -356,7 +353,6 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            prefixIcon: Icon(Icons.flag, semanticLabel: 'Ícone de UF'),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -380,11 +376,10 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      prefixIcon: Icon(Icons.edit_location_alt, semanticLabel: 'Ícone de complemento'),
                     ),
                   ),
                   const SizedBox(height: 32),
-                  ElevatedButton.icon(
+                  ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.primary,
                       foregroundColor: Colors.white,
@@ -392,7 +387,7 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: isSaving ? null : _salvarEndereco,
-                    icon: isSaving
+                    child: isSaving
                         ? const SizedBox(
                             width: 20,
                             height: 20,
@@ -402,8 +397,7 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                               semanticsLabel: 'Carregando',
                             ),
                           )
-                        : const Icon(Icons.save, semanticLabel: 'Salvar endereço'),
-                    label: Text(isSaving ? 'Salvando...' : 'Salvar endereço'),
+                        : const Text('Salvar endereço'),
                   ),
                   const SizedBox(height: 24),
                 ],

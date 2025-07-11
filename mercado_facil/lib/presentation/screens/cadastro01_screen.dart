@@ -211,7 +211,6 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      prefixIcon: Icon(Icons.person, color: colorScheme.tertiary, semanticLabel: 'Ícone de pessoa'),
                     ),
                     textCapitalization: TextCapitalization.words,
                     validator: (value) {
@@ -239,7 +238,6 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      prefixIcon: Icon(Icons.email, color: colorScheme.tertiary, semanticLabel: 'Ícone de e-mail'),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     autocorrect: false,
@@ -265,7 +263,6 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      prefixIcon: Icon(Icons.phone, color: colorScheme.tertiary, semanticLabel: 'Ícone de telefone'),
                     ),
                     keyboardType: TextInputType.phone,
                     inputFormatters: [
@@ -299,7 +296,6 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      prefixIcon: Icon(Icons.lock, color: colorScheme.tertiary, semanticLabel: 'Ícone de senha'),
                       suffixIcon: IconButton(
                         icon: Icon(
                           obscureSenha ? Icons.visibility : Icons.visibility_off,
@@ -360,7 +356,6 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      prefixIcon: Icon(Icons.lock_outline, color: colorScheme.tertiary, semanticLabel: 'Ícone de senha'),
                       suffixIcon: IconButton(
                         icon: Icon(
                           obscureConfirmarSenha ? Icons.visibility : Icons.visibility_off,

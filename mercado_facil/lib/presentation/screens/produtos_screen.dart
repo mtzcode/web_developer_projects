@@ -48,7 +48,6 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
   void initState() {
     super.initState();
     _inicializarCategorias();
-    _carregarDadosUsuario();
     _searchFocusNode.addListener(() {
       setState(() {
         _showSuggestions = _searchFocusNode.hasFocus;
@@ -59,6 +58,11 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
       if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_carregandoMais && _temMaisProdutos) {
         _carregarMaisProdutos();
       }
+    });
+    
+    // Carregar dados do usuário após o build inicial
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _carregarDadosUsuario();
     });
   }
 
@@ -404,8 +408,7 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
               title: const Text('Meus Pedidos'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Navegar para a tela de pedidos
-                // Navigator.pushNamed(context, '/pedidos');
+                Navigator.pushNamed(context, '/pedidos');
               },
             ),
             ListTile(

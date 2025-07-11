@@ -160,16 +160,15 @@ class _RedefinirSenhaScreenState extends State<RedefinirSenhaScreen> {
                 const SizedBox(height: 32),
                 
                 // Campo Email
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'E-mail',
-                    hintText: 'exemplo@email.com',
-                    labelStyle: TextStyle(color: colorScheme.tertiary),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                                  TextFormField(
+                    decoration: InputDecoration(
+                      labelText: 'E-mail',
+                      hintText: 'exemplo@email.com',
+                      labelStyle: TextStyle(color: colorScheme.tertiary),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    prefixIcon: Icon(Icons.email, color: colorScheme.tertiary),
-                  ),
                   keyboardType: TextInputType.emailAddress,
                   autocorrect: false,
                   validator: (value) {

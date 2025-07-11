@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/services/carrinho_provider.dart';
+import '../../data/models/carrinho_item.dart';
 
 class CarrinhoScreen extends StatelessWidget {
   const CarrinhoScreen({super.key});
@@ -17,17 +18,10 @@ class CarrinhoScreen extends StatelessWidget {
         backgroundColor: colorScheme.primary,
         foregroundColor: Colors.white,
       ),
-      body: StreamBuilder<List<CarrinhoItem>>(
-        stream: carrinhoProvider.carrinhoStream(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Erro ao carregar carrinho', style: TextStyle(color: Colors.red)));
-          }
-          final carrinho = snapshot.data ?? [];
-          final total = carrinho.fold(0.0, (soma, item) => soma + item.subtotal);
+      body: Consumer<CarrinhoProvider>(
+        builder: (context, carrinhoProvider, child) {
+          final carrinho = carrinhoProvider.itens;
+          final total = carrinhoProvider.total;
 
           if (carrinho.isEmpty) {
             return Center(
@@ -207,11 +201,20 @@ class CarrinhoScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: carrinho.isEmpty ? null : () {},
+                    onPressed: carrinho.isEmpty ? null : () {
+                      Navigator.pushNamed(context, '/confirmacao-pedido');
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.primary,
                     ),
-                    child: const Text('Finalizar Pedido'),
+                    child: const Text(
+                      'Finalizar Pedido',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ],

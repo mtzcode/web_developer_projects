@@ -314,7 +314,7 @@ class _EnderecosScreenState extends State<EnderecosScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                ElevatedButton.icon(
+                ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: Colors.white,
@@ -322,7 +322,7 @@ class _EnderecosScreenState extends State<EnderecosScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: isSaving ? null : _salvarEndereco,
-                  icon: isSaving 
+                  child: isSaving 
                     ? const SizedBox(
                         width: 20,
                         height: 20,
@@ -331,8 +331,7 @@ class _EnderecosScreenState extends State<EnderecosScreen> {
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Icon(Icons.save),
-                  label: Text(isSaving ? 'Salvando...' : 'Salvar endereço'),
+                    : const Text('Salvar endereço'),
                 ),
                 const SizedBox(height: 24),
               ],

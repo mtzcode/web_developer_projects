@@ -5,6 +5,7 @@ class Usuario {
   final String whatsapp;
   final String senhaHash; // Senha criptografada
   final Map<String, dynamic>? endereco;
+  final List<Map<String, dynamic>>? enderecos;
   final String? fotoUrl;
   final DateTime dataCadastro;
   final bool ativo;
@@ -17,6 +18,7 @@ class Usuario {
     required this.whatsapp,
     required this.senhaHash,
     this.endereco,
+    this.enderecos,
     this.fotoUrl,
     required this.dataCadastro,
     this.ativo = true,
@@ -31,6 +33,7 @@ class Usuario {
       'whatsapp': whatsapp,
       'senhaHash': senhaHash,
       'endereco': endereco,
+      'enderecos': enderecos,
       'fotoUrl': fotoUrl,
       'dataCadastro': dataCadastro.toIso8601String(),
       'ativo': ativo,
@@ -47,6 +50,9 @@ class Usuario {
       whatsapp: map['whatsapp'] ?? '',
       senhaHash: map['senhaHash'] ?? '',
       endereco: map['endereco'],
+      enderecos: map['enderecos'] != null 
+          ? List<Map<String, dynamic>>.from(map['enderecos'])
+          : null,
       fotoUrl: map['fotoUrl'],
       dataCadastro: DateTime.parse(map['dataCadastro'] ?? DateTime.now().toIso8601String()),
       ativo: map['ativo'] ?? true,
@@ -61,6 +67,7 @@ class Usuario {
     String? whatsapp,
     String? senhaHash,
     Map<String, dynamic>? endereco,
+    List<Map<String, dynamic>>? enderecos,
     String? fotoUrl,
     bool? ativo,
     bool? cadastroCompleto,
@@ -72,6 +79,7 @@ class Usuario {
       whatsapp: whatsapp ?? this.whatsapp,
       senhaHash: senhaHash ?? this.senhaHash,
       endereco: endereco ?? this.endereco,
+      enderecos: enderecos ?? this.enderecos,
       fotoUrl: fotoUrl ?? this.fotoUrl,
       dataCadastro: dataCadastro,
       ativo: ativo ?? this.ativo,

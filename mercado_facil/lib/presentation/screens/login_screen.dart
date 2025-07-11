@@ -90,23 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Logo/Ícone
-                Semantics(
-                  label: 'Logo do Mercado Fácil',
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.shopping_cart,
-                      size: 60,
-                      color: colorScheme.primary,
-                      semanticLabel: 'Carrinho de compras',
-                    ),
-                  ),
-                ),
+
                 const SizedBox(height: 24),
                 // Título
                 Text(
@@ -137,7 +121,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    prefixIcon: Icon(Icons.email, color: colorScheme.tertiary, semanticLabel: 'Ícone de e-mail'),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   autocorrect: false,
@@ -162,7 +145,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    prefixIcon: Icon(Icons.lock, color: colorScheme.tertiary, semanticLabel: 'Ícone de senha'),
                     suffixIcon: IconButton(
                       icon: Icon(
                         obscureText ? Icons.visibility_off : Icons.visibility,

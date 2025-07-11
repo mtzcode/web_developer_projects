@@ -155,7 +155,7 @@ class _NotificacoesScreenState extends State<NotificacoesScreen> {
           const SizedBox(height: 32),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: ElevatedButton.icon(
+            child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: colorScheme.primary,
                 foregroundColor: Colors.white,
@@ -168,8 +168,7 @@ class _NotificacoesScreenState extends State<NotificacoesScreen> {
                   const SnackBar(content: Text('Preferências salvas!')),
                 );
               },
-              icon: const Icon(Icons.save),
-              label: const Text('Salvar preferências'),
+              child: const Text('Salvar preferências'),
             ),
           ),
         ],

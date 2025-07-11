@@ -12,11 +12,16 @@ import 'presentation/screens/produtos_screen.dart';
 import 'presentation/screens/carrinho_screen.dart';
 import 'presentation/screens/notificacoes_screen.dart';
 import 'presentation/screens/enderecos_screen.dart';
+import 'presentation/screens/cadastro_endereco_screen.dart';
 import 'presentation/screens/meus_dados_screen.dart';
 import 'presentation/screens/redefinir_senha_screen.dart';
+import 'presentation/screens/pedidos_screen.dart';
+import 'presentation/screens/detalhes_pedido_screen.dart';
+import 'presentation/screens/confirmacao_pedido_screen.dart';
 import 'data/services/carrinho_provider.dart';
 import 'data/services/firestore_auth_service.dart';
 import 'data/services/user_provider.dart';
+import 'data/services/pedidos_provider.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -43,14 +48,25 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
         Provider<FirestoreAuthService>(create: (_) => FirestoreAuthService()),
-        ProxyProvider<UserProvider, CarrinhoProvider>(
+        ChangeNotifierProxyProvider<UserProvider, CarrinhoProvider>(
+          create: (_) => CarrinhoProvider(userId: ''),
           update: (context, userProvider, previous) {
             final userId = userProvider.usuarioLogado?.id;
-            if (userId != null) {
+            if (userId != null && userId.isNotEmpty) {
               return CarrinhoProvider(userId: userId);
             } else {
-              // Retorna um provider "vazio" se não estiver logado
               return CarrinhoProvider(userId: '');
+            }
+          },
+        ),
+        ChangeNotifierProxyProvider<UserProvider, PedidosProvider>(
+          create: (_) => PedidosProvider(userId: ''),
+          update: (context, userProvider, previous) {
+            final userId = userProvider.usuarioLogado?.id;
+            if (userId != null && userId.isNotEmpty) {
+              return PedidosProvider(userId: userId);
+            } else {
+              return PedidosProvider(userId: '');
             }
           },
         ),
@@ -69,8 +85,11 @@ class MyApp extends StatelessWidget {
           '/carrinho': (context) => const CarrinhoScreen(),
           '/notificacoes': (context) => const NotificacoesScreen(),
           '/enderecos': (context) => const EnderecosScreen(),
+          '/cadastro-endereco': (context) => const CadastroEnderecoScreen(),
           '/perfil': (context) => const MeusDadosScreen(),
           '/redefinir_senha': (context) => const RedefinirSenhaScreen(),
+          '/pedidos': (context) => const PedidosScreen(),
+          '/confirmacao-pedido': (context) => const ConfirmacaoPedidoScreen(),
         },
       ),
     );

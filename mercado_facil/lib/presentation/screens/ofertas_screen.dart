@@ -15,6 +15,7 @@ class OfertasScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ofertas'),
+        centerTitle: true,
         backgroundColor: colorScheme.primary,
         foregroundColor: Colors.white,
       ),
