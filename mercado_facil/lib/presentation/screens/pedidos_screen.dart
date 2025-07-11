@@ -61,7 +61,6 @@ class _PedidosScreenState extends State<PedidosScreen> with TickerProviderStateM
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Meus Pedidos'),
         centerTitle: true,
@@ -104,6 +103,7 @@ class _PedidosScreenState extends State<PedidosScreen> with TickerProviderStateM
               ],
             ),
           ),
+          
           // Conteúdo das tabs
           Expanded(
             child: TabBarView(
@@ -237,7 +237,6 @@ class _PedidosScreenState extends State<PedidosScreen> with TickerProviderStateM
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
-      color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),

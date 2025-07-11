@@ -167,9 +167,9 @@ class _ProdutoCardState extends State<ProdutoCard> {
                           ),
                           child: const Text('Adicionar ao carrinho'),
                         ),
-                      ),
-                    ],
-                  ),
+          ),
+        ],
+      ),
                 );
               },
             );
@@ -200,53 +200,53 @@ class _ProdutoCardState extends State<ProdutoCard> {
                       // Imagem maior, ocupando o topo
                       Semantics(
                         label: 'Imagem do produto ${widget.produto.nome}',
-                        child: ClipRRect(
+              child: ClipRRect(
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(16),
                             topRight: Radius.circular(16),
                           ),
-                          child: Image.network(
+                child: Image.network(
                             widget.produto.imagemUrl,
                             height: 110,
                             width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
                               return Container(
                                 height: 110,
                                 color: colorScheme.tertiary.withOpacity(0.15),
                                 child: Center(
-                                  child: Icon(
-                                    Icons.image,
-                                    color: colorScheme.tertiary,
-                                    size: 40,
+                      child: Icon(
+                        Icons.image,
+                        color: colorScheme.tertiary,
+                        size: 40,
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
                       ),
+                    );
+                  },
+                ),
+              ),
+            ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Nome do produto
+            // Nome do produto
                             Semantics(
                               header: true,
                               child: Text(
                                 widget.produto.nome,
-                                style: TextStyle(
+              style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: colorScheme.secondary,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                color: colorScheme.secondary,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
                               ),
-                            ),
+            ),
                             const SizedBox(height: 4),
-                            // Preço
+            // Preço
                             if (widget.produto.precoPromocional != null)
                               Row(
                                 children: [
@@ -281,12 +281,12 @@ class _ProdutoCardState extends State<ProdutoCard> {
                                 label: 'Preço R\$${widget.produto.preco.toStringAsFixed(2)}',
                                 child: Text(
                                   'R\$ ${widget.produto.preco.toStringAsFixed(2)}',
-                                  style: TextStyle(
+              style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
-                                    color: colorScheme.primary,
-                                  ),
-                                ),
+                color: colorScheme.primary,
+              ),
+            ),
                               ),
                             const SizedBox(height: 8),
                             // Botão de adicionar ao carrinho
@@ -294,15 +294,15 @@ class _ProdutoCardState extends State<ProdutoCard> {
                               button: true,
                               label: 'Adicionar ${widget.produto.nome} ao carrinho',
                               child: SizedBox(
-                                width: double.infinity,
-                                height: 36,
+              width: double.infinity,
+              height: 36,
                                 child: ElevatedButton(
                                   onPressed: widget.onAdicionarAoCarrinho,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.produtoButtonColor,
-                                    foregroundColor: Colors.white,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.produtoButtonColor,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
@@ -377,11 +377,11 @@ class _ProdutoCardState extends State<ProdutoCard> {
                           color: widget.produto.favorito ? Colors.red : Colors.grey.shade400,
                           size: 28,
                         ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
+            ),
+          ],
+        ),
             ),
           ),
         ),
