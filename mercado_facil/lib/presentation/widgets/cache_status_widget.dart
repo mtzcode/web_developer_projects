@@ -110,6 +110,7 @@ class CacheStatusWidget extends StatelessWidget {
   void _mostrarOpcoesCache(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),
         child: Column(

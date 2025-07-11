@@ -143,6 +143,7 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         title: const Text('Informações do Cache'),
         content: Column(
           mainAxisSize: MainAxisSize.min,

@@ -157,18 +157,20 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
 
     try {
       // Preparar dados do usuário para salvar no Firestore
+      final enderecoMap = {
+        'cep': cepController.text,
+        'logradouro': enderecoController.text,
+        'numero': numeroController.text,
+        'bairro': bairroController.text,
+        'complemento': complementoController.text,
+        'uf': ufController.text,
+      };
       final userData = {
         'nome': nome,
         'email': email,
         'whatsapp': whatsapp,
-        'endereco': {
-          'cep': cepController.text,
-          'logradouro': enderecoController.text,
-          'numero': numeroController.text,
-          'bairro': bairroController.text,
-          'complemento': complementoController.text,
-          'uf': ufController.text,
-        },
+        'endereco': enderecoMap,
+        'enderecos': [enderecoMap], // Salva também na lista
         'dataCadastro': DateTime.now().toIso8601String(),
         'ativo': true,
       };

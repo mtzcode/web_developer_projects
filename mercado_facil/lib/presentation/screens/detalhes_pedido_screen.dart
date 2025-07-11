@@ -151,6 +151,7 @@ class _DetalhesPedidoScreenState extends State<DetalhesPedidoScreen> {
   Widget _buildStatusHeader(Pedido pedido) {
     return Card(
       elevation: 2,
+      color: Colors.white, // Fundo branco
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -252,6 +253,7 @@ class _DetalhesPedidoScreenState extends State<DetalhesPedidoScreen> {
   Widget _buildTimeline(Pedido pedido) {
     return Card(
       elevation: 2,
+      color: Colors.white, // Fundo branco
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -287,6 +289,7 @@ class _DetalhesPedidoScreenState extends State<DetalhesPedidoScreen> {
   Widget _buildPedidoInfo(Pedido pedido) {
     return Card(
       elevation: 2,
+      color: Colors.white, // Fundo branco
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -322,6 +325,7 @@ class _DetalhesPedidoScreenState extends State<DetalhesPedidoScreen> {
     final endereco = pedido.enderecoEntrega!;
     return Card(
       elevation: 2,
+      color: Colors.white, // Fundo branco
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -373,6 +377,7 @@ class _DetalhesPedidoScreenState extends State<DetalhesPedidoScreen> {
   Widget _buildItensList(Pedido pedido) {
     return Card(
       elevation: 2,
+      color: Colors.white, // Fundo branco
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -462,6 +467,7 @@ class _DetalhesPedidoScreenState extends State<DetalhesPedidoScreen> {
   Widget _buildResumoFinanceiro(Pedido pedido) {
     return Card(
       elevation: 2,
+      color: Colors.white, // Fundo branco
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -491,6 +497,7 @@ class _DetalhesPedidoScreenState extends State<DetalhesPedidoScreen> {
   Widget _buildObservacoes(Pedido pedido) {
     return Card(
       elevation: 2,
+      color: Colors.white, // Fundo branco
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -526,6 +533,7 @@ class _DetalhesPedidoScreenState extends State<DetalhesPedidoScreen> {
   Widget _buildCodigoRastreamento(Pedido pedido) {
     return Card(
       elevation: 2,
+      color: Colors.white, // Fundo branco
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -686,6 +694,7 @@ class _DetalhesPedidoScreenState extends State<DetalhesPedidoScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: const Text('Cancelar Pedido'),
           content: Text(
             'Tem certeza que deseja cancelar o pedido #${pedido.id.substring(0, 8)}?',

@@ -328,8 +328,8 @@ class _ConfirmacaoPedidoScreenState extends State<ConfirmacaoPedidoScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white,
-              Colors.grey[50]!,
+              Color(0xFFF7F7F7), // Cinza quase branco para leve destaque
+              Color(0xFFF7F7F7),
             ],
           ),
         ),
@@ -361,46 +361,52 @@ class _ConfirmacaoPedidoScreenState extends State<ConfirmacaoPedidoScreen> {
               const SizedBox(height: 20),
               
               if (_enderecoSelecionado != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.blue[200]!),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${_enderecoSelecionado!['logradouro'] ?? ''}, ${_enderecoSelecionado!['numero'] ?? ''}',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
-                      if (_enderecoSelecionado!['complemento'] != null && _enderecoSelecionado!['complemento'].isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            _enderecoSelecionado!['complemento'],
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
+                SizedBox(
+                  width: double.infinity,
+                  child: Card(
+                    elevation: 0,
+                    color: Color(0xFFF7F7F7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: Colors.blue[200]!),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${_enderecoSelecionado!['logradouro'] ?? ''}, ${_enderecoSelecionado!['numero'] ?? ''}',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                          if (_enderecoSelecionado!['complemento'] != null && _enderecoSelecionado!['complemento'].isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                _enderecoSelecionado!['complemento'],
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              '${_enderecoSelecionado!['bairro'] ?? ''} - ${_enderecoSelecionado!['cidade'] ?? ''}, ${_enderecoSelecionado!['estado'] ?? ''}',
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          '${_enderecoSelecionado!['bairro'] ?? ''} - ${_enderecoSelecionado!['cidade'] ?? ''}, ${_enderecoSelecionado!['estado'] ?? ''}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              'CEP: ${_enderecoSelecionado!['cep'] ?? ''}',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          'CEP: ${_enderecoSelecionado!['cep'] ?? ''}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -850,8 +856,21 @@ class _ConfirmacaoPedidoScreenState extends State<ConfirmacaoPedidoScreen> {
   void _mostrarDialogEnderecos() {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final usuario = userProvider.usuarioLogado;
-    
-    if (usuario?.enderecos == null || usuario!.enderecos!.isEmpty) {
+
+    // Sempre inclui o endereço principal na lista, sem duplicar
+    List<Map<String, dynamic>> enderecosParaMostrar = [];
+    if (usuario?.endereco != null) {
+      enderecosParaMostrar.add(usuario!.endereco!);
+    }
+    if (usuario?.enderecos != null && usuario!.enderecos!.isNotEmpty) {
+      for (var end in usuario.enderecos!) {
+        if (usuario.endereco == null || !_enderecosIguais(usuario.endereco!, end)) {
+          enderecosParaMostrar.add(end);
+        }
+      }
+    }
+
+    if (enderecosParaMostrar.isEmpty) {
       _adicionarNovoEndereco();
       return;
     }
@@ -859,14 +878,16 @@ class _ConfirmacaoPedidoScreenState extends State<ConfirmacaoPedidoScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         title: const Text('Selecionar Endereço'),
         content: SizedBox(
           width: double.maxFinite,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ...usuario.enderecos!.map((endereco) => Card(
+              ...enderecosParaMostrar.map((endereco) => Card(
                 margin: const EdgeInsets.only(bottom: 8),
+                color: Color(0xFFF7F7F7), // Fundo claro para melhor legibilidade
                 child: ListTile(
                   leading: Radio<Map<String, dynamic>>(
                     value: endereco,
@@ -929,6 +950,16 @@ class _ConfirmacaoPedidoScreenState extends State<ConfirmacaoPedidoScreen> {
         ],
       ),
     );
+  }
+
+  // Função para comparar endereços (evita duplicidade)
+  bool _enderecosIguais(Map<String, dynamic> a, Map<String, dynamic> b) {
+    return a['cep'] == b['cep'] &&
+           a['logradouro'] == b['logradouro'] &&
+           a['numero'] == b['numero'] &&
+           a['bairro'] == b['bairro'] &&
+           (a['complemento'] ?? '') == (b['complemento'] ?? '') &&
+           a['uf'] == b['uf'];
   }
 
   void _adicionarNovoEndereco() {

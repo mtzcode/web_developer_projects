@@ -237,6 +237,7 @@ class _PedidosScreenState extends State<PedidosScreen> with TickerProviderStateM
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
+      color: Colors.white, // Fundo branco
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -415,6 +416,7 @@ class _PedidosScreenState extends State<PedidosScreen> with TickerProviderStateM
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: const Text('Cancelar Pedido'),
           content: Text(
             'Tem certeza que deseja cancelar o pedido #${pedido.id.substring(0, 8)}?',

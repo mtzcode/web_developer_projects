@@ -32,8 +32,8 @@ class _RedefinirSenhaScreenState extends State<RedefinirSenhaScreen> {
         // Mostrar diálogo de sucesso
         showDialog(
           context: context,
-          barrierDismissible: false,
           builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
             title: const Text('Email enviado!'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
