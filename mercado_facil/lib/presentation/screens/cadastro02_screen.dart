@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../data/services/firestore_service.dart';
-import '../../data/services/endereco_service.dart';
+import '../../data/datasources/firestore_service.dart';
+import '../../data/datasources/endereco_service.dart';
 import '../../core/utils/validators.dart';
 
 class Cadastro02Screen extends StatefulWidget {

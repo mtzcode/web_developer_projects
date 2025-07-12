@@ -1,7 +1,7 @@
 import '../models/produto.dart';
-import 'cache_service.dart';
-import 'memory_cache_service.dart';
-import 'firestore_service.dart';
+import '../datasources/cache_service.dart';
+import '../datasources/memory_cache_service.dart';
+import '../datasources/firestore_service.dart';
 
 class ProdutosService {
   static final FirestoreService _firestoreService = FirestoreService();

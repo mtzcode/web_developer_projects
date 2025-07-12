@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../data/services/carrinho_provider.dart';
+import '../../data/providers/carrinho_provider.dart';
 import '../../data/models/carrinho_item.dart';
 
 class CarrinhoScreen extends StatelessWidget {

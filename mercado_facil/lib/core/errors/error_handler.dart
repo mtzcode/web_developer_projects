@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../exceptions/app_exception.dart';
+import 'app_exception.dart';
 import '../utils/logger.dart';
 
 /// Handler global para tratamento de erros da aplicação

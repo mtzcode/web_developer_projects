@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../data/services/pedidos_provider.dart';
-import '../../data/services/carrinho_provider.dart';
-import '../../data/services/user_provider.dart';
+import '../../data/providers/pedidos_provider.dart';
+import '../../data/providers/carrinho_provider.dart';
+import '../../data/providers/user_provider.dart';
 import '../../data/models/pedido.dart';
 import '../../data/models/usuario.dart';
 

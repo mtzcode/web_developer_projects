@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/usuario.dart';
-import 'firestore_auth_service.dart';
+import '../datasources/firestore_auth_service.dart';
 
 class UserProvider extends ChangeNotifier {
   final FirestoreAuthService _authService = FirestoreAuthService();

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../data/services/user_provider.dart';
-import '../../data/services/endereco_service.dart';
+import '../../data/providers/user_provider.dart';
+import '../../data/datasources/endereco_service.dart';
 import '../../core/utils/validators.dart';
 
 class CadastroEnderecoScreen extends StatefulWidget {

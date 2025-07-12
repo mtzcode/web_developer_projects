@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-import '../../data/services/user_provider.dart';
+import '../../data/providers/user_provider.dart';
 import '../../core/utils/validators.dart';
 
 class MeusDadosScreen extends StatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/pedido.dart';
 import '../models/carrinho_item.dart';
-import 'pedidos_service.dart';
+import '../services/pedidos_service.dart';
 
 class PedidosProvider extends ChangeNotifier {
   final PedidosService _pedidosService = PedidosService();

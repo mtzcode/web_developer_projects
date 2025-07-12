@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_app_check/firebase_app_check.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/logger.dart';
-import 'core/error/error_handler.dart';
+import 'core/errors/error_handler.dart';
 import 'presentation/widgets/auth_wrapper.dart';
 import 'presentation/widgets/error_dialog.dart';
 import 'presentation/widgets/loading_overlay.dart';
@@ -22,10 +22,10 @@ import 'presentation/screens/redefinir_senha_screen.dart';
 import 'presentation/screens/pedidos_screen.dart';
 import 'presentation/screens/detalhes_pedido_screen.dart';
 import 'presentation/screens/confirmacao_pedido_screen.dart';
-import 'data/services/carrinho_provider.dart';
-import 'data/services/firestore_auth_service.dart';
-import 'data/services/user_provider.dart';
-import 'data/services/pedidos_provider.dart';
+import 'data/providers/carrinho_provider.dart';
+import 'data/providers/user_provider.dart';
+import 'data/providers/pedidos_provider.dart';
+import 'data/datasources/firestore_auth_service.dart';
 import 'firebase_options.dart';
 
 void main() async {

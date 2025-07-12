@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mercado_facil/core/exceptions/app_exception.dart';
+import 'package:mercado_facil/core/errors/app_exception.dart';
 
 void main() {
   group('AppException', () {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/services/produtos_service.dart';
-import '../../data/services/memory_cache_service.dart';
+import '../../data/datasources/memory_cache_service.dart';
 
 class CacheStatusWidget extends StatelessWidget {
   const CacheStatusWidget({super.key});

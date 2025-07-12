@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:mercado_facil/presentation/screens/produtos_screen.dart';
-import 'package:mercado_facil/data/services/carrinho_provider.dart';
+import 'package:mercado_facil/data/providers/carrinho_provider.dart';
 
 void main() {
   group('ProdutosScreen Widget Tests', () {

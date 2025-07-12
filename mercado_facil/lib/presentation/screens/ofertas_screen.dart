@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/produto.dart';
-import '../../data/services/carrinho_provider.dart';
+import '../../data/providers/carrinho_provider.dart';
 import '../widgets/produto_card.dart';
 
 class OfertasScreen extends StatelessWidget {

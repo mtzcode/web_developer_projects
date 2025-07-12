@@ -5,8 +5,8 @@ import '../../data/services/produtos_service.dart';
 import '../widgets/produto_card.dart';
 import '../widgets/cache_status_widget.dart';
 import 'package:provider/provider.dart';
-import '../../data/services/carrinho_provider.dart';
-import '../../data/services/user_provider.dart';
+import '../../data/providers/carrinho_provider.dart';
+import '../../data/providers/user_provider.dart';
 import '../../data/models/produto.dart';
 import 'ofertas_screen.dart';
 
