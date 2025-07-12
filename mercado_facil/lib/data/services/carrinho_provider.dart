@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/carrinho_item.dart';
 import '../models/produto.dart';
+import '../../core/utils/logger.dart';
 
 class CarrinhoProvider extends ChangeNotifier {
   final String userId;
@@ -14,8 +15,10 @@ class CarrinhoProvider extends ChangeNotifier {
   CarrinhoProvider({required this.userId}) {
     // Carregar carrinho automaticamente quando o provider é criado
     if (userId.isNotEmpty) {
+      AppLogger.cart('Inicializando CarrinhoProvider para usuário: $userId');
       carregarCarrinho();
     } else {
+      AppLogger.cart('CarrinhoProvider inicializado sem usuário');
       _carregado = true;
     }
   }
@@ -28,14 +31,16 @@ class CarrinhoProvider extends ChangeNotifier {
   // Buscar carrinho do Firestore (uma vez)
   Future<void> carregarCarrinho() async {
     if (userId.isEmpty) {
+      AppLogger.cart('Tentativa de carregar carrinho sem userId');
       _itens = [];
       _carregado = true;
       notifyListeners();
       return;
     }
     
+    AppLogger.cart('Carregando carrinho do Firestore', 'Usuário: $userId');
+    
     try {
-      print('Carregando carrinho para usuário: $userId');
       final doc = await _firestore.collection(_colecao).doc(userId).get();
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
@@ -44,13 +49,13 @@ class CarrinhoProvider extends ChangeNotifier {
           produto: Produto.fromMap(item['produto']),
           quantidade: item['quantidade'] ?? 1,
         )).toList();
-        print('Carrinho carregado com ${_itens.length} itens');
+        AppLogger.cart('Carrinho carregado com sucesso', 'Quantidade de itens: ${_itens.length}');
       } else {
         _itens = [];
-        print('Carrinho não encontrado para usuário: $userId');
+        AppLogger.cart('Carrinho não encontrado no Firestore', 'Usuário: $userId');
       }
-    } catch (e) {
-      print('Erro ao carregar carrinho: $e');
+    } catch (e, stackTrace) {
+      AppLogger.failure('Carregamento de carrinho', 'Erro ao carregar carrinho do Firestore', e, stackTrace);
       _itens = [];
     }
     _carregado = true;
@@ -70,7 +75,7 @@ class CarrinhoProvider extends ChangeNotifier {
 
   Future<void> _salvarCarrinho() async {
     if (userId.isEmpty) {
-      print('Tentativa de salvar carrinho sem userId');
+      AppLogger.cart('Tentativa de salvar carrinho sem userId');
       return;
     }
     
@@ -79,29 +84,32 @@ class CarrinhoProvider extends ChangeNotifier {
         'produto': item.produto.toMap(),
         'quantidade': item.quantidade,
       }).toList();
+      
       await _firestore.collection(_colecao).doc(userId).set({
         'itens': itensFirestore,
       });
-      print('Carrinho salvo com sucesso para usuário: $userId (${_itens.length} itens)');
-    } catch (e) {
-      print('Erro ao salvar carrinho: $e');
+      
+      AppLogger.cart('Carrinho salvo no Firestore', 'Usuário: $userId, Itens: ${_itens.length}');
+    } catch (e, stackTrace) {
+      AppLogger.failure('Salvamento de carrinho', 'Erro ao salvar carrinho no Firestore', e, stackTrace);
     }
   }
 
   void adicionarProduto(Produto produto) {
     if (userId.isEmpty) {
-      print('Tentativa de adicionar produto sem userId');
+      AppLogger.cart('Tentativa de adicionar produto sem userId');
       return;
     }
     
-    print('Adicionando produto: ${produto.nome} para usuário: $userId');
+    AppLogger.cart('Adicionando produto ao carrinho', 'Produto: ${produto.nome}, Usuário: $userId');
+    
     final index = _itens.indexWhere((item) => item.produto.id == produto.id);
     if (index >= 0) {
       _itens[index].quantidade++;
-      print('Produto já existe, aumentando quantidade para: ${_itens[index].quantidade}');
+      AppLogger.cart('Quantidade atualizada', 'Produto: ${produto.nome}, Nova quantidade: ${_itens[index].quantidade}');
     } else {
       _itens.add(CarrinhoItem(produto: produto));
-      print('Novo produto adicionado ao carrinho');
+      AppLogger.cart('Novo produto adicionado', 'Produto: ${produto.nome}');
     }
     
     // Atualizar UI imediatamente
@@ -113,6 +121,8 @@ class CarrinhoProvider extends ChangeNotifier {
 
   void removerProduto(Produto produto) {
     if (userId.isEmpty) return;
+    
+    AppLogger.cart('Removendo produto do carrinho', 'Produto: ${produto.nome}, Usuário: $userId');
     
     _itens.removeWhere((item) => item.produto.id == produto.id);
     
@@ -126,12 +136,16 @@ class CarrinhoProvider extends ChangeNotifier {
   void alterarQuantidade(Produto produto, int quantidade) {
     if (userId.isEmpty) return;
     
+    AppLogger.cart('Alterando quantidade do produto', 'Produto: ${produto.nome}, Nova quantidade: $quantidade');
+    
     final index = _itens.indexWhere((item) => item.produto.id == produto.id);
     if (index >= 0) {
       if (quantidade <= 0) {
         _itens.removeAt(index);
+        AppLogger.cart('Produto removido (quantidade zero)', 'Produto: ${produto.nome}');
       } else {
         _itens[index].quantidade = quantidade;
+        AppLogger.cart('Quantidade alterada', 'Produto: ${produto.nome}, Quantidade: $quantidade');
       }
       
       // Atualizar UI imediatamente
@@ -144,6 +158,8 @@ class CarrinhoProvider extends ChangeNotifier {
 
   void limparCarrinho() {
     if (userId.isEmpty) return;
+    
+    AppLogger.cart('Limpando carrinho', 'Usuário: $userId');
     
     _itens.clear();
     

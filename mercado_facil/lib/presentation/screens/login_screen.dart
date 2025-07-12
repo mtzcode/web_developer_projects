@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/services/firestore_auth_service.dart';
+import '../../core/utils/validators.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,10 +17,50 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
   final _authService = FirestoreAuthService();
 
+  // Estados para feedback visual em tempo real
+  bool emailValid = false;
+  bool emailTouched = false;
+  bool senhaValid = false;
+  bool senhaTouched = false;
+
   // Regex para validação de email
   static final RegExp _emailRegex = RegExp(
     r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
   );
+
+  // Função para validar email em tempo real
+  void _validarEmailTempoReal(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      setState(() {
+        emailValid = false;
+        emailTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = Validators.email(value) == null;
+    setState(() {
+      emailValid = isValid;
+      emailTouched = true;
+    });
+  }
+
+  // Função para validar senha em tempo real
+  void _validarSenhaTempoReal(String? value) {
+    if (value == null || value.isEmpty) {
+      setState(() {
+        senhaValid = false;
+        senhaTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = Validators.senha(value) == null;
+    setState(() {
+      senhaValid = isValid;
+      senhaTouched = true;
+    });
+  }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
@@ -86,6 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -121,18 +163,34 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    suffixIcon: emailTouched
+                        ? Icon(
+                            emailValid ? Icons.check_circle : Icons.error,
+                            color: emailValid ? Colors.green : Colors.red,
+                          )
+                        : null,
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: emailTouched
+                            ? (emailValid ? Colors.green : Colors.red)
+                            : colorScheme.primary,
+                        width: 2,
+                      ),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   autocorrect: false,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Digite seu e-mail';
-                    }
-                    if (!_emailRegex.hasMatch(value.trim())) {
-                      return 'Digite um e-mail válido';
-                    }
-                    return null;
-                  },
+                  validator: Validators.email,
+                  onChanged: _validarEmailTempoReal,
                   onSaved: (value) => email = value?.trim() ?? '',
                 ),
                 const SizedBox(height: 16),
@@ -140,31 +198,54 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   decoration: InputDecoration(
                     labelText: 'Senha',
-                    hintText: 'Digite sua senha',
+                    hintText: 'Sua senha',
                     labelStyle: TextStyle(color: colorScheme.tertiary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        obscureText ? Icons.visibility_off : Icons.visibility,
-                        color: colorScheme.tertiary,
-                        semanticLabel: obscureText ? 'Mostrar senha' : 'Ocultar senha',
+                    suffixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (senhaTouched)
+                          Icon(
+                            senhaValid ? Icons.check_circle : Icons.error,
+                            color: senhaValid ? Colors.green : Colors.red,
+                          ),
+                        IconButton(
+                          icon: Icon(
+                            obscureText ? Icons.visibility_off : Icons.visibility,
+                            color: colorScheme.tertiary,
+                            semanticLabel: obscureText ? 'Mostrar senha' : 'Ocultar senha',
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              obscureText = !obscureText;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: senhaTouched
+                            ? (senhaValid ? Colors.green : Colors.red)
+                            : colorScheme.primary,
+                        width: 2,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          obscureText = !obscureText;
-                        });
-                      },
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
                     ),
                   ),
                   obscureText: obscureText,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite sua senha';
-                    }
-                    return null;
-                  },
+                  validator: Validators.senha,
+                  onChanged: _validarSenhaTempoReal,
                   onSaved: (value) => senha = value ?? '',
                 ),
                 const SizedBox(height: 8),

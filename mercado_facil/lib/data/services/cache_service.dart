@@ -28,7 +28,7 @@ class CacheService {
       await prefs.setString(_produtosKey, jsonEncode(produtosJson));
       await prefs.setInt(_lastUpdateKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Erro ao salvar produtos no cache: $e');
+      // Erro silencioso ao salvar no cache
     }
   }
 
@@ -53,7 +53,6 @@ class CacheService {
         favorito: json['favorito'] ?? false,
       )).toList();
     } catch (e) {
-      print('Erro ao carregar produtos do cache: $e');
       return [];
     }
   }

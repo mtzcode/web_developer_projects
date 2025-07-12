@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../data/services/firestore_auth_service.dart';
+import '../../core/utils/validators.dart';
 
 class Cadastro01Screen extends StatefulWidget {
   const Cadastro01Screen({super.key});
@@ -25,6 +26,18 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
   bool obscureSenha = true;
   bool obscureConfirmarSenha = true;
   bool isLoading = false;
+
+  // Estados para feedback visual em tempo real
+  bool nomeValid = false;
+  bool nomeTouched = false;
+  bool emailValid = false;
+  bool emailTouched = false;
+  bool whatsappValid = false;
+  bool whatsappTouched = false;
+  bool senhaValid = false;
+  bool senhaTouched = false;
+  bool confirmarSenhaValid = false;
+  bool confirmarSenhaTouched = false;
 
   // Regex para validações
   static final RegExp _emailRegex = RegExp(
@@ -103,6 +116,87 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
     return null;
   }
 
+  // Funções para validação em tempo real
+  void _validarNomeTempoReal(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      setState(() {
+        nomeValid = false;
+        nomeTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = value.trim().split(' ').length >= 2 && value.trim().length >= 3;
+    setState(() {
+      nomeValid = isValid;
+      nomeTouched = true;
+    });
+  }
+
+  void _validarEmailTempoReal(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      setState(() {
+        emailValid = false;
+        emailTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = Validators.email(value) == null;
+    setState(() {
+      emailValid = isValid;
+      emailTouched = true;
+    });
+  }
+
+  void _validarWhatsAppTempoReal(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      setState(() {
+        whatsappValid = false;
+        whatsappTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = Validators.telefone(value) == null;
+    setState(() {
+      whatsappValid = isValid;
+      whatsappTouched = true;
+    });
+  }
+
+  void _validarSenhaTempoReal(String? value) {
+    if (value == null || value.isEmpty) {
+      setState(() {
+        senhaValid = false;
+        senhaTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = Validators.senha(value) == null;
+    setState(() {
+      senhaValid = isValid;
+      senhaTouched = true;
+    });
+  }
+
+  void _validarConfirmarSenhaTempoReal(String? value) {
+    if (value == null || value.isEmpty) {
+      setState(() {
+        confirmarSenhaValid = false;
+        confirmarSenhaTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = value == senha;
+    setState(() {
+      confirmarSenhaValid = isValid;
+      confirmarSenhaTouched = true;
+    });
+  }
+
   // Formatar WhatsApp
   String _formatarWhatsApp(String value) {
     // Remove tudo que não é número
@@ -178,6 +272,7 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: Form(
               key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -211,6 +306,29 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      suffixIcon: nomeTouched
+                          ? Icon(
+                              nomeValid ? Icons.check_circle : Icons.error,
+                              color: nomeValid ? Colors.green : Colors.red,
+                            )
+                          : null,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: nomeTouched
+                              ? (nomeValid ? Colors.green : Colors.red)
+                              : colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
                     ),
                     textCapitalization: TextCapitalization.words,
                     validator: (value) {
@@ -225,6 +343,7 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                       }
                       return null;
                     },
+                    onChanged: _validarNomeTempoReal,
                     onSaved: (value) => nome = value?.trim() ?? '',
                   ),
                   const SizedBox(height: 16),
@@ -238,18 +357,34 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      suffixIcon: emailTouched
+                          ? Icon(
+                              emailValid ? Icons.check_circle : Icons.error,
+                              color: emailValid ? Colors.green : Colors.red,
+                            )
+                          : null,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: emailTouched
+                              ? (emailValid ? Colors.green : Colors.red)
+                              : colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     autocorrect: false,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Digite seu e-mail';
-                      }
-                      if (!_emailRegex.hasMatch(value.trim())) {
-                        return 'Digite um e-mail válido';
-                      }
-                      return null;
-                    },
+                    validator: Validators.email,
+                    onChanged: _validarEmailTempoReal,
                     onSaved: (value) => email = value?.trim() ?? '',
                   ),
                   const SizedBox(height: 16),
@@ -263,26 +398,41 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      suffixIcon: whatsappTouched
+                          ? Icon(
+                              whatsappValid ? Icons.check_circle : Icons.error,
+                              color: whatsappValid ? Colors.green : Colors.red,
+                            )
+                          : null,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: whatsappTouched
+                              ? (whatsappValid ? Colors.green : Colors.red)
+                              : colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
                     ),
                     keyboardType: TextInputType.phone,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
                       LengthLimitingTextInputFormatter(11),
                     ],
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Digite seu WhatsApp';
-                      }
-                      String numeros = value.replaceAll(RegExp(r'[^\d]'), '');
-                      if (numeros.length < 10) {
-                        return 'WhatsApp deve ter pelo menos 10 dígitos';
-                      }
-                      return null;
-                    },
+                    validator: Validators.telefone,
                     onChanged: (value) {
                       setState(() {
                         whatsapp = _formatarWhatsApp(value);
                       });
+                      _validarWhatsAppTempoReal(value);
                     },
                     onSaved: (value) => whatsapp = value?.trim() ?? '',
                   ),
@@ -291,28 +441,56 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                   TextFormField(
                     decoration: InputDecoration(
                       labelText: 'Senha',
-                      hintText: 'Mínimo 8 caracteres',
+                      hintText: 'Crie uma senha forte',
                       labelStyle: TextStyle(color: colorScheme.tertiary),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureSenha ? Icons.visibility : Icons.visibility_off,
-                          color: colorScheme.tertiary,
-                          semanticLabel: obscureSenha ? 'Mostrar senha' : 'Ocultar senha',
+                      suffixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (senhaTouched)
+                            Icon(
+                              senhaValid ? Icons.check_circle : Icons.error,
+                              color: senhaValid ? Colors.green : Colors.red,
+                            ),
+                          IconButton(
+                            icon: Icon(
+                              obscureSenha ? Icons.visibility : Icons.visibility_off,
+                              color: colorScheme.tertiary,
+                              semanticLabel: obscureSenha ? 'Mostrar senha' : 'Ocultar senha',
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                obscureSenha = !obscureSenha;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: senhaTouched
+                              ? (senhaValid ? Colors.green : Colors.red)
+                              : colorScheme.primary,
+                          width: 2,
                         ),
-                        onPressed: () {
-                          setState(() {
-                            obscureSenha = !obscureSenha;
-                          });
-                        },
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
                       ),
                     ),
                     obscureText: obscureSenha,
-                    validator: _validarForcaSenha,
+                    validator: Validators.senha,
                     onChanged: (value) {
                       senha = value ?? '';
+                      _validarSenhaTempoReal(value);
                     },
                     onSaved: (value) => senha = value ?? '',
                   ),
@@ -356,22 +534,50 @@ class _Cadastro01ScreenState extends State<Cadastro01Screen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureConfirmarSenha ? Icons.visibility : Icons.visibility_off,
-                          color: colorScheme.tertiary,
-                          semanticLabel: obscureConfirmarSenha ? 'Mostrar senha' : 'Ocultar senha',
+                      suffixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (confirmarSenhaTouched)
+                            Icon(
+                              confirmarSenhaValid ? Icons.check_circle : Icons.error,
+                              color: confirmarSenhaValid ? Colors.green : Colors.red,
+                            ),
+                          IconButton(
+                            icon: Icon(
+                              obscureConfirmarSenha ? Icons.visibility : Icons.visibility_off,
+                              color: colorScheme.tertiary,
+                              semanticLabel: obscureConfirmarSenha ? 'Mostrar senha' : 'Ocultar senha',
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                obscureConfirmarSenha = !obscureConfirmarSenha;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: confirmarSenhaTouched
+                              ? (confirmarSenhaValid ? Colors.green : Colors.red)
+                              : colorScheme.primary,
+                          width: 2,
                         ),
-                        onPressed: () {
-                          setState(() {
-                            obscureConfirmarSenha = !obscureConfirmarSenha;
-                          });
-                        },
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
                       ),
                     ),
                     obscureText: obscureConfirmarSenha,
                     onChanged: (value) {
                       confirmarSenha = value ?? '';
+                      _validarConfirmarSenhaTempoReal(value);
                     },
                     validator: (value) {
                       if (value == null || value.isEmpty) {

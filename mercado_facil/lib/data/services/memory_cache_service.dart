@@ -10,7 +10,6 @@ class MemoryCacheService {
   static void salvarProdutos(List<Produto> produtos) {
     _produtosCache = List.from(produtos);
     _lastUpdate = DateTime.now();
-    print('Produtos salvos no cache em memória');
   }
 
   // Carrega produtos do cache em memória
@@ -35,7 +34,6 @@ class MemoryCacheService {
   static void limparCache() {
     _produtosCache = null;
     _lastUpdate = null;
-    print('Cache em memória limpo');
   }
 
   // Força atualização do cache (marca como expirado)

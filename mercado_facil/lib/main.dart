@@ -3,7 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_app_check/firebase_app_check.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/logger.dart';
+import 'core/error/error_handler.dart';
 import 'presentation/widgets/auth_wrapper.dart';
+import 'presentation/widgets/error_dialog.dart';
+import 'presentation/widgets/loading_overlay.dart';
 import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/cadastro01_screen.dart';
 import 'presentation/screens/cadastro02_screen.dart';
@@ -26,9 +30,21 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  
+  // Configurar logging
+  _configureLogging();
+  
+  // Inicializar Firebase
+  AppLogger.startOperation('Firebase initialization');
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    AppLogger.success('Firebase initialization');
+  } catch (e, stackTrace) {
+    AppLogger.failure('Firebase initialization', 'Erro ao inicializar Firebase', e, stackTrace);
+    rethrow;
+  }
   
   // Configurar AppCheck (desabilitado temporariamente para debug)
   // await FirebaseAppCheck.instance.activate(
@@ -36,7 +52,22 @@ void main() async {
   //   appleProvider: AppleProvider.debug,
   // );
 
+  AppLogger.info('Aplicativo iniciado com sucesso');
   runApp(const MyApp());
+}
+
+/// Configura o sistema de logging baseado no ambiente
+void _configureLogging() {
+  // Em produção, você pode definir isso baseado em variáveis de ambiente
+  const bool isProduction = bool.fromEnvironment('dart.vm.product', defaultValue: false);
+  
+  AppLogger.setProductionMode(isProduction);
+  
+  if (isProduction) {
+    AppLogger.info('Modo de produção ativado - logs de debug desabilitados');
+  } else {
+    AppLogger.info('Modo de desenvolvimento ativado - todos os logs habilitados');
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -44,6 +75,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppLogger.ui('Construindo widget MyApp');
+    
+    // Configurar ErrorHandler
+    _configureErrorHandler();
+    
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
@@ -92,6 +128,24 @@ class MyApp extends StatelessWidget {
           '/confirmacao-pedido': (context) => const ConfirmacaoPedidoScreen(),
         },
       ),
+    );
+  }
+
+  /// Configura o ErrorHandler com os callbacks necessários
+  void _configureErrorHandler() {
+    ErrorHandler.configure(
+      showError: (message, {title, icon, color}) {
+        // Este callback será configurado quando tivermos acesso ao context
+        AppLogger.operationWarning('ErrorHandler não configurado com context', 'Mensagem: $message');
+      },
+      showLoading: (show) {
+        // Este callback será configurado quando tivermos acesso ao context
+        AppLogger.info('Loading ${show ? "iniciado" : "finalizado"}');
+      },
+      navigate: (route, {arguments}) {
+        // Este callback será configurado quando tivermos acesso ao context
+        AppLogger.navigation('Navegação solicitada: $route');
+      },
     );
   }
 } 

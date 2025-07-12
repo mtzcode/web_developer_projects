@@ -36,10 +36,8 @@ class PedidosProvider extends ChangeNotifier {
 
     try {
       _pedidos = await _pedidosService.buscarPedidosUsuario(userId);
-      print('Pedidos carregados: ${_pedidos.length}');
     } catch (e) {
       _erro = 'Erro ao carregar pedidos: $e';
-      print('Erro ao carregar pedidos: $e');
     } finally {
       _carregando = false;
       notifyListeners();
@@ -53,14 +51,7 @@ class PedidosProvider extends ChangeNotifier {
     required String metodoPagamento,
     String? observacoes,
   }) async {
-    print('=== PEDIDOS PROVIDER - CRIAR PEDIDO ===');
-    print('UserId: $userId');
-    print('Itens: ${itens.length}');
-    print('Endereço: $enderecoEntrega');
-    print('Método: $metodoPagamento');
-    
     if (userId.isEmpty) {
-      print('❌ Usuário não identificado');
       _erro = 'Usuário não identificado';
       notifyListeners();
       return null;
@@ -71,7 +62,6 @@ class PedidosProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      print('Chamando PedidosService.criarPedido...');
       final pedidoId = await _pedidosService.criarPedido(
         usuarioId: userId,
         itens: itens,
@@ -79,19 +69,13 @@ class PedidosProvider extends ChangeNotifier {
         metodoPagamento: metodoPagamento,
         observacoes: observacoes,
       );
-
-      print('✅ Pedido criado com ID: $pedidoId');
       
       // Recarregar pedidos para incluir o novo
-      print('Recarregando lista de pedidos...');
       await carregarPedidos();
 
-      print('✅ Pedido criado com sucesso: $pedidoId');
       return pedidoId;
     } catch (e) {
-      print('❌ Erro no PedidosProvider: $e');
       _erro = 'Erro ao criar pedido: $e';
-      print('Erro ao criar pedido: $e');
       return null;
     } finally {
       _carregando = false;
@@ -112,7 +96,6 @@ class PedidosProvider extends ChangeNotifier {
       }
     } catch (e) {
       _erro = 'Erro ao carregar pedido: $e';
-      print('Erro ao carregar pedido: $e');
     } finally {
       _carregando = false;
       notifyListeners();
@@ -139,11 +122,9 @@ class PedidosProvider extends ChangeNotifier {
         _pedidoAtual = _pedidoAtual!.copyWith(status: StatusPedido.cancelado);
       }
 
-      print('Pedido cancelado com sucesso: $pedidoId');
       return true;
     } catch (e) {
       _erro = 'Erro ao cancelar pedido: $e';
-      print('Erro ao cancelar pedido: $e');
       return false;
     } finally {
       _carregando = false;
@@ -171,11 +152,9 @@ class PedidosProvider extends ChangeNotifier {
         _pedidoAtual = _pedidoAtual!.copyWith(status: novoStatus);
       }
 
-      print('Status do pedido atualizado: $pedidoId -> ${novoStatus.name}');
       return true;
     } catch (e) {
       _erro = 'Erro ao atualizar status do pedido: $e';
-      print('Erro ao atualizar status do pedido: $e');
       return false;
     } finally {
       _carregando = false;
@@ -203,11 +182,9 @@ class PedidosProvider extends ChangeNotifier {
         _pedidoAtual = _pedidoAtual!.copyWith(codigoRastreamento: codigo);
       }
 
-      print('Código de rastreamento adicionado: $pedidoId -> $codigo');
       return true;
     } catch (e) {
       _erro = 'Erro ao adicionar código de rastreamento: $e';
-      print('Erro ao adicionar código de rastreamento: $e');
       return false;
     } finally {
       _carregando = false;
@@ -220,7 +197,6 @@ class PedidosProvider extends ChangeNotifier {
     try {
       return await _pedidosService.buscarPedidosPorStatus(userId, status);
     } catch (e) {
-      print('Erro ao buscar pedidos por status: $e');
       return [];
     }
   }
@@ -230,7 +206,6 @@ class PedidosProvider extends ChangeNotifier {
     try {
       return await _pedidosService.estatisticasUsuario(userId);
     } catch (e) {
-      print('Erro ao buscar estatísticas: $e');
       return {
         'totalPedidos': 0,
         'pedidosPendentes': 0,

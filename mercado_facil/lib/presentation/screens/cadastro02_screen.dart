@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/services/firestore_service.dart';
 import '../../data/services/endereco_service.dart';
+import '../../core/utils/validators.dart';
 
 class Cadastro02Screen extends StatefulWidget {
   const Cadastro02Screen({super.key});
@@ -24,6 +25,16 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
   bool isSaving = false;
   String lastCepSearched = '';
   String? lastEnderecoSource; // 'cache' ou 'api'
+
+  // Estados para feedback visual em tempo real
+  bool cepValid = false;
+  bool cepTouched = false;
+  bool enderecoValid = false;
+  bool enderecoTouched = false;
+  bool numeroValid = false;
+  bool numeroTouched = false;
+  bool bairroValid = false;
+  bool bairroTouched = false;
   
   // Dados do usuário vindos da tela anterior
   String? userId;
@@ -86,6 +97,71 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
           whatsapp = args['whatsapp'];
         });
       }
+    });
+  }
+
+  // Funções para validação em tempo real
+  void _validarCepTempoReal(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      setState(() {
+        cepValid = false;
+        cepTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = Validators.cep(value) == null;
+    setState(() {
+      cepValid = isValid;
+      cepTouched = true;
+    });
+  }
+
+  void _validarEnderecoTempoReal(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      setState(() {
+        enderecoValid = false;
+        enderecoTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = value.trim().length >= 3;
+    setState(() {
+      enderecoValid = isValid;
+      enderecoTouched = true;
+    });
+  }
+
+  void _validarNumeroTempoReal(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      setState(() {
+        numeroValid = false;
+        numeroTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = value.trim().length >= 1;
+    setState(() {
+      numeroValid = isValid;
+      numeroTouched = true;
+    });
+  }
+
+  void _validarBairroTempoReal(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      setState(() {
+        bairroValid = false;
+        bairroTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = value.trim().length >= 2;
+    setState(() {
+      bairroValid = isValid;
+      bairroTouched = true;
     });
   }
 
@@ -225,6 +301,7 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: Form(
               key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -265,18 +342,33 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                                 child: CircularProgressIndicator(strokeWidth: 2, semanticsLabel: 'Carregando'),
                               ),
                             )
-                          : null,
+                          : cepTouched
+                              ? Icon(
+                                  cepValid ? Icons.check_circle : Icons.error,
+                                  color: cepValid ? Colors.green : Colors.red,
+                                )
+                              : null,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: cepTouched
+                              ? (cepValid ? Colors.green : Colors.red)
+                              : colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
                     ),
                     keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Digite o CEP';
-                      }
-                      if (value.length != 8) {
-                        return 'CEP deve ter 8 dígitos';
-                      }
-                      return null;
-                    },
+                    validator: Validators.cep,
+                    onChanged: _validarCepTempoReal,
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -291,6 +383,29 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
+                            suffixIcon: enderecoTouched
+                                ? Icon(
+                                    enderecoValid ? Icons.check_circle : Icons.error,
+                                    color: enderecoValid ? Colors.green : Colors.red,
+                                  )
+                                : null,
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: enderecoTouched
+                                    ? (enderecoValid ? Colors.green : Colors.red)
+                                    : colorScheme.primary,
+                                width: 2,
+                              ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.red, width: 2),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.red, width: 2),
+                            ),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -298,6 +413,7 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                             }
                             return null;
                           },
+                          onChanged: _validarEnderecoTempoReal,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -311,6 +427,29 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
+                            suffixIcon: numeroTouched
+                                ? Icon(
+                                    numeroValid ? Icons.check_circle : Icons.error,
+                                    color: numeroValid ? Colors.green : Colors.red,
+                                  )
+                                : null,
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: numeroTouched
+                                    ? (numeroValid ? Colors.green : Colors.red)
+                                    : colorScheme.primary,
+                                width: 2,
+                              ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.red, width: 2),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.red, width: 2),
+                            ),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -318,6 +457,7 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                             }
                             return null;
                           },
+                          onChanged: _validarNumeroTempoReal,
                         ),
                       ),
                     ],
@@ -335,6 +475,29 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
+                            suffixIcon: bairroTouched
+                                ? Icon(
+                                    bairroValid ? Icons.check_circle : Icons.error,
+                                    color: bairroValid ? Colors.green : Colors.red,
+                                  )
+                                : null,
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: bairroTouched
+                                    ? (bairroValid ? Colors.green : Colors.red)
+                                    : colorScheme.primary,
+                                width: 2,
+                              ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.red, width: 2),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.red, width: 2),
+                            ),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -342,6 +505,7 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
                             }
                             return null;
                           },
+                          onChanged: _validarBairroTempoReal,
                         ),
                       ),
                       const SizedBox(width: 12),

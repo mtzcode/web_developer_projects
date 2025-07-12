@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/services/firestore_auth_service.dart';
+import '../../core/utils/validators.dart';
 
 class RedefinirSenhaScreen extends StatefulWidget {
   const RedefinirSenhaScreen({super.key});
@@ -14,10 +15,31 @@ class _RedefinirSenhaScreenState extends State<RedefinirSenhaScreen> {
   bool isLoading = false;
   final _authService = FirestoreAuthService();
 
+  // Estados para feedback visual em tempo real
+  bool emailValid = false;
+  bool emailTouched = false;
+
   // Regex para validação de email
   static final RegExp _emailRegex = RegExp(
     r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
   );
+
+  // Função para validar email em tempo real
+  void _validarEmailTempoReal(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      setState(() {
+        emailValid = false;
+        emailTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = Validators.email(value) == null;
+    setState(() {
+      emailValid = isValid;
+      emailTouched = true;
+    });
+  }
 
   Future<void> _enviarEmailRecuperacao() async {
     if (!_formKey.currentState!.validate()) return;
@@ -160,26 +182,42 @@ class _RedefinirSenhaScreenState extends State<RedefinirSenhaScreen> {
                 const SizedBox(height: 32),
                 
                 // Campo Email
-                                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: 'E-mail',
-                      hintText: 'exemplo@email.com',
-                      labelStyle: TextStyle(color: colorScheme.tertiary),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'E-mail',
+                    hintText: 'exemplo@email.com',
+                    labelStyle: TextStyle(color: colorScheme.tertiary),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    suffixIcon: emailTouched
+                        ? Icon(
+                            emailValid ? Icons.check_circle : Icons.error,
+                            color: emailValid ? Colors.green : Colors.red,
+                          )
+                        : null,
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: emailTouched
+                            ? (emailValid ? Colors.green : Colors.red)
+                            : colorScheme.primary,
+                        width: 2,
                       ),
                     ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                  ),
                   keyboardType: TextInputType.emailAddress,
                   autocorrect: false,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Digite seu e-mail';
-                    }
-                    if (!_emailRegex.hasMatch(value.trim())) {
-                      return 'Digite um e-mail válido';
-                    }
-                    return null;
-                  },
+                  validator: Validators.email,
+                  onChanged: _validarEmailTempoReal,
                   onSaved: (value) => email = value?.trim() ?? '',
                 ),
                 const SizedBox(height: 32),

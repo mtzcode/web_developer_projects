@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/services/user_provider.dart';
 import '../../data/services/endereco_service.dart';
+import '../../core/utils/validators.dart';
 
 class EnderecosScreen extends StatefulWidget {
   const EnderecosScreen({super.key});
@@ -169,6 +170,7 @@ class _EnderecosScreenState extends State<EnderecosScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -201,15 +203,7 @@ class _EnderecosScreenState extends State<EnderecosScreen> {
                         : null,
                   ),
                   keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite o CEP';
-                    }
-                    if (value.length != 8) {
-                      return 'CEP deve ter 8 dígitos';
-                    }
-                    return null;
-                  },
+                  validator: Validators.cep,
                 ),
                 const SizedBox(height: 16),
                 Row(

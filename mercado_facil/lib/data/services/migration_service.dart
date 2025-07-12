@@ -128,8 +128,6 @@ class MigrationService {
   // Migrar produtos para Firestore
   Future<void> migrarProdutos() async {
     try {
-      print('Iniciando migração de produtos...');
-      
       final batch = _firestore.batch();
       int contador = 0;
       
@@ -140,9 +138,7 @@ class MigrationService {
       }
       
       await batch.commit();
-      print('✅ $contador produtos migrados com sucesso!');
     } catch (e) {
-      print('❌ Erro ao migrar produtos: $e');
       throw Exception('Falha na migração de produtos');
     }
   }
@@ -153,7 +149,6 @@ class MigrationService {
       final snapshot = await _firestore.collection('produtos').limit(1).get();
       return snapshot.docs.isNotEmpty;
     } catch (e) {
-      print('Erro ao verificar produtos: $e');
       return false;
     }
   }
@@ -161,8 +156,6 @@ class MigrationService {
   // Limpar todos os produtos (cuidado!)
   Future<void> limparProdutos() async {
     try {
-      print('⚠️ Limpando todos os produtos...');
-      
       final snapshot = await _firestore.collection('produtos').get();
       final batch = _firestore.batch();
       
@@ -171,9 +164,7 @@ class MigrationService {
       }
       
       await batch.commit();
-      print('✅ Produtos removidos com sucesso!');
     } catch (e) {
-      print('❌ Erro ao limpar produtos: $e');
       throw Exception('Falha ao limpar produtos');
     }
   }
@@ -181,24 +172,17 @@ class MigrationService {
   // Migração completa
   Future<void> executarMigracaoCompleta() async {
     try {
-      print('🚀 Iniciando migração completa...');
-      
       // Verificar se já existem dados
       final produtosExistem = await this.produtosExistem();
       
       if (produtosExistem) {
-        print('⚠️ Produtos já existem no Firestore');
-        print('Deseja continuar mesmo assim? (S/N)');
         // Em uma implementação real, você perguntaria ao usuário
         return;
       }
       
       // Migrar produtos
       await migrarProdutos();
-      
-      print('✅ Migração completa finalizada!');
     } catch (e) {
-      print('❌ Erro na migração: $e');
       throw Exception('Falha na migração completa');
     }
   }
@@ -213,10 +197,8 @@ class MigrationService {
       
       await _firestore.collection('teste').doc('conexao').delete();
       
-      print('✅ Conexão com Firestore funcionando!');
       return true;
     } catch (e) {
-      print('❌ Erro na conexão com Firestore: $e');
       return false;
     }
   }
@@ -234,7 +216,6 @@ class MigrationService {
         'pedidos': pedidosSnapshot.docs.length,
       };
     } catch (e) {
-      print('Erro ao obter estatísticas: $e');
       return {
         'produtos': 0,
         'usuarios': 0,

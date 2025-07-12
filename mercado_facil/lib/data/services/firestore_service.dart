@@ -31,7 +31,6 @@ class FirestoreService {
         );
       }).toList();
     } catch (e) {
-      print('Erro ao buscar produtos: $e');
       throw Exception('Erro ao carregar produtos');
     }
   }
@@ -58,7 +57,6 @@ class FirestoreService {
         );
       }).toList();
     } catch (e) {
-      print('Erro ao buscar produtos por categoria: $e');
       throw Exception('Erro ao carregar produtos');
     }
   }
@@ -85,7 +83,6 @@ class FirestoreService {
         );
       }).toList();
     } catch (e) {
-      print('Erro ao buscar produtos em destaque: $e');
       throw Exception('Erro ao carregar produtos em destaque');
     }
   }
@@ -95,7 +92,6 @@ class FirestoreService {
     try {
       await _produtos.add(produto);
     } catch (e) {
-      print('Erro ao adicionar produto: $e');
       throw Exception('Erro ao adicionar produto');
     }
   }
@@ -108,7 +104,6 @@ class FirestoreService {
         await doc.reference.delete();
       }
     } catch (e) {
-      print('Erro ao limpar produtos: $e');
       throw Exception('Erro ao limpar produtos');
     }
   }
@@ -120,7 +115,6 @@ class FirestoreService {
     try {
       await _usuarios.doc(userId).set(dados, SetOptions(merge: true));
     } catch (e) {
-      print('Erro ao salvar usuário: $e');
       throw Exception('Erro ao salvar dados do usuário');
     }
   }
@@ -131,7 +125,6 @@ class FirestoreService {
       final doc = await _usuarios.doc(userId).get();
       return doc.data() as Map<String, dynamic>?;
     } catch (e) {
-      print('Erro ao buscar usuário: $e');
       return null;
     }
   }
@@ -147,7 +140,6 @@ class FirestoreService {
         'dataAdicao': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Erro ao adicionar favorito: $e');
       throw Exception('Erro ao adicionar aos favoritos');
     }
   }
@@ -157,7 +149,6 @@ class FirestoreService {
     try {
       await _favoritos.doc('${userId}_$produtoId').delete();
     } catch (e) {
-      print('Erro ao remover favorito: $e');
       throw Exception('Erro ao remover dos favoritos');
     }
   }
@@ -168,7 +159,6 @@ class FirestoreService {
       final doc = await _favoritos.doc('${userId}_$produtoId').get();
       return doc.exists;
     } catch (e) {
-      print('Erro ao verificar favorito: $e');
       return false;
     }
   }
@@ -185,7 +175,6 @@ class FirestoreService {
         return data['produtoId'] as String;
       }).toList();
     } catch (e) {
-      print('Erro ao buscar favoritos: $e');
       return [];
     }
   }
@@ -203,7 +192,6 @@ class FirestoreService {
       });
       return docRef.id;
     } catch (e) {
-      print('Erro ao criar pedido: $e');
       throw Exception('Erro ao criar pedido');
     }
   }
@@ -224,7 +212,6 @@ class FirestoreService {
         };
       }).toList();
     } catch (e) {
-      print('Erro ao buscar pedidos: $e');
       return [];
     }
   }
@@ -237,7 +224,6 @@ class FirestoreService {
         'dataAtualizacao': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Erro ao atualizar status do pedido: $e');
       throw Exception('Erro ao atualizar pedido');
     }
   }
@@ -254,7 +240,6 @@ class FirestoreService {
         return produto.copyWith(favorito: favoritos.contains(produto.id));
       }).toList();
     } catch (e) {
-      print('Erro ao buscar produtos com favoritos: $e');
       return [];
     }
   }
@@ -274,7 +259,6 @@ class FirestoreService {
       
       return categorias.toList()..sort();
     } catch (e) {
-      print('Erro ao buscar categorias: $e');
       return [];
     }
   }

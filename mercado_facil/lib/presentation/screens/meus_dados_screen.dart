@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import '../../data/services/user_provider.dart';
+import '../../core/utils/validators.dart';
 
 class MeusDadosScreen extends StatefulWidget {
   const MeusDadosScreen({super.key});
@@ -21,6 +22,18 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
   final TextEditingController confirmarSenhaController = TextEditingController();
   bool _mostrarAlterarSenha = false;
   bool _isLoading = false;
+
+  // Estados para feedback visual em tempo real
+  bool nomeValid = false;
+  bool nomeTouched = false;
+  bool emailValid = false;
+  bool emailTouched = false;
+  bool whatsappValid = false;
+  bool whatsappTouched = false;
+  bool novaSenhaValid = false;
+  bool novaSenhaTouched = false;
+  bool confirmarSenhaValid = false;
+  bool confirmarSenhaTouched = false;
 
   File? _foto;
   String? _fotoUrl;
@@ -56,6 +69,88 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
       });
     }
   }
+
+  // Funções para validação em tempo real
+  void _validarNomeTempoReal(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      setState(() {
+        nomeValid = false;
+        nomeTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = value.trim().length >= 3;
+    setState(() {
+      nomeValid = isValid;
+      nomeTouched = true;
+    });
+  }
+
+  void _validarEmailTempoReal(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      setState(() {
+        emailValid = false;
+        emailTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = Validators.email(value) == null;
+    setState(() {
+      emailValid = isValid;
+      emailTouched = true;
+    });
+  }
+
+  void _validarWhatsAppTempoReal(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      setState(() {
+        whatsappValid = false;
+        whatsappTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = Validators.telefone(value) == null;
+    setState(() {
+      whatsappValid = isValid;
+      whatsappTouched = true;
+    });
+  }
+
+  void _validarNovaSenhaTempoReal(String? value) {
+    if (value == null || value.isEmpty) {
+      setState(() {
+        novaSenhaValid = false;
+        novaSenhaTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = Validators.senha(value) == null;
+    setState(() {
+      novaSenhaValid = isValid;
+      novaSenhaTouched = true;
+    });
+  }
+
+  void _validarConfirmarSenhaTempoReal(String? value) {
+    if (value == null || value.isEmpty) {
+      setState(() {
+        confirmarSenhaValid = false;
+        confirmarSenhaTouched = true;
+      });
+      return;
+    }
+    
+    final isValid = value == novaSenhaController.text;
+    setState(() {
+      confirmarSenhaValid = isValid;
+      confirmarSenhaTouched = true;
+    });
+  }
+
   Future<void> _salvarDados() async {
     if (!_formKey.currentState!.validate()) return;
     
@@ -112,6 +207,7 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -151,6 +247,29 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                   decoration: InputDecoration(
                     labelText: 'Nome',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    suffixIcon: nomeTouched
+                        ? Icon(
+                            nomeValid ? Icons.check_circle : Icons.error,
+                            color: nomeValid ? Colors.green : Colors.red,
+                          )
+                        : null,
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: nomeTouched
+                            ? (nomeValid ? Colors.green : Colors.red)
+                            : colorScheme.primary,
+                        width: 2,
+                      ),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -158,6 +277,7 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                     }
                     return null;
                   },
+                  onChanged: _validarNomeTempoReal,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -165,17 +285,33 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                   decoration: InputDecoration(
                     labelText: 'E-mail',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    suffixIcon: emailTouched
+                        ? Icon(
+                            emailValid ? Icons.check_circle : Icons.error,
+                            color: emailValid ? Colors.green : Colors.red,
+                          )
+                        : null,
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: emailTouched
+                            ? (emailValid ? Colors.green : Colors.red)
+                            : colorScheme.primary,
+                        width: 2,
+                      ),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
                   ),
                   keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite seu e-mail';
-                    }
-                    if (!value.contains('@')) {
-                      return 'E-mail inválido';
-                    }
-                    return null;
-                  },
+                  validator: Validators.email,
+                  onChanged: _validarEmailTempoReal,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -183,14 +319,33 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                   decoration: InputDecoration(
                     labelText: 'WhatsApp',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    suffixIcon: whatsappTouched
+                        ? Icon(
+                            whatsappValid ? Icons.check_circle : Icons.error,
+                            color: whatsappValid ? Colors.green : Colors.red,
+                          )
+                        : null,
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: whatsappTouched
+                            ? (whatsappValid ? Colors.green : Colors.red)
+                            : colorScheme.primary,
+                        width: 2,
+                      ),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
                   ),
                   keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite seu WhatsApp';
-                    }
-                    return null;
-                  },
+                  validator: Validators.telefone,
+                  onChanged: _validarWhatsAppTempoReal,
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -239,6 +394,29 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                     decoration: InputDecoration(
                       labelText: 'Nova senha',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      suffixIcon: novaSenhaTouched
+                          ? Icon(
+                              novaSenhaValid ? Icons.check_circle : Icons.error,
+                              color: novaSenhaValid ? Colors.green : Colors.red,
+                            )
+                          : null,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: novaSenhaTouched
+                              ? (novaSenhaValid ? Colors.green : Colors.red)
+                              : colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
                     ),
                     obscureText: true,
                     validator: (value) {
@@ -250,6 +428,7 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                       }
                       return null;
                     },
+                    onChanged: _validarNovaSenhaTempoReal,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -257,6 +436,29 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                     decoration: InputDecoration(
                       labelText: 'Confirmar nova senha',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      suffixIcon: confirmarSenhaTouched
+                          ? Icon(
+                              confirmarSenhaValid ? Icons.check_circle : Icons.error,
+                              color: confirmarSenhaValid ? Colors.green : Colors.red,
+                            )
+                          : null,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: confirmarSenhaTouched
+                              ? (confirmarSenhaValid ? Colors.green : Colors.red)
+                              : colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
                     ),
                     obscureText: true,
                     validator: (value) {
@@ -268,6 +470,7 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
                       }
                       return null;
                     },
+                    onChanged: _validarConfirmarSenhaTempoReal,
                   ),
                 ],
                 const SizedBox(height: 32),

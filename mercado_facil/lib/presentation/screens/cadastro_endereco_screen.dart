@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/services/user_provider.dart';
 import '../../data/services/endereco_service.dart';
+import '../../core/utils/validators.dart';
 
 class CadastroEnderecoScreen extends StatefulWidget {
   const CadastroEnderecoScreen({super.key});
@@ -142,6 +143,7 @@ class _CadastroEnderecoScreenState extends State<CadastroEnderecoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -161,6 +163,7 @@ class _CadastroEnderecoScreenState extends State<CadastroEnderecoScreen> {
       ),
       body: Form(
         key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -220,27 +223,9 @@ class _CadastroEnderecoScreenState extends State<CadastroEnderecoScreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            suffixIcon: isLoading
-                                ? const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    ),
-                                  )
-                                : const Icon(Icons.search),
                           ),
                           keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'CEP é obrigatório';
-                            }
-                            if (value.replaceAll(RegExp(r'[^\d]'), '').length != 8) {
-                              return 'CEP deve ter 8 dígitos';
-                            }
-                            return null;
-                          },
+                          validator: Validators.cep,
                         ),
                         const SizedBox(height: 16),
                         
