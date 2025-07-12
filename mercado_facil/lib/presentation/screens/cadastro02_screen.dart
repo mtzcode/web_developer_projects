@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/services/firestore_service.dart';
 import '../../data/services/endereco_service.dart';
 import '../../core/utils/validators.dart';
+import '../../core/utils/snackbar_utils.dart';
 
 class Cadastro02Screen extends StatefulWidget {
   const Cadastro02Screen({super.key});
@@ -52,28 +53,26 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
           bairroController.text = endereco.bairro;
           ufController.text = endereco.uf;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Endereço encontrado!'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
+        showAppSnackBar(
+          context,
+          'Endereço encontrado!',
+          icon: Icons.check_circle,
+          backgroundColor: Colors.green.shade600,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('CEP não encontrado!'),
-            backgroundColor: Colors.orange,
-            duration: Duration(seconds: 2),
-          ),
+        showAppSnackBar(
+          context,
+          'CEP não encontrado!',
+          icon: Icons.error,
+          backgroundColor: Colors.orange.shade600,
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao buscar CEP: $e'),
-          backgroundColor: Colors.red,
-        ),
+      showAppSnackBar(
+        context,
+        'Erro ao buscar CEP: $e',
+        icon: Icons.error,
+        backgroundColor: Colors.red.shade600,
       );
     } finally {
       setState(() { isLoading = false; });
@@ -220,11 +219,11 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
   Future<void> _salvarEndereco() async {
     if (!_formKey.currentState!.validate()) return;
     if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Erro: Dados do usuário não encontrados'),
-          backgroundColor: Colors.red,
-        ),
+      showAppSnackBar(
+        context,
+        'Erro: Dados do usuário não encontrados',
+        icon: Icons.error,
+        backgroundColor: Colors.red.shade600,
       );
       return;
     }
@@ -257,11 +256,11 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
       await _firestoreService.salvarUsuario(userId!, {'cadastroCompleto': true});
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cadastro realizado com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
+        showAppSnackBar(
+          context,
+          'Cadastro realizado com sucesso!',
+          icon: Icons.check_circle,
+          backgroundColor: Colors.green.shade600,
         );
 
         // Navegar para a tela principal
@@ -269,11 +268,11 @@ class _Cadastro02ScreenState extends State<Cadastro02Screen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao finalizar cadastro: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showAppSnackBar(
+          context,
+          'Erro ao finalizar cadastro: $e',
+          icon: Icons.error,
+          backgroundColor: Colors.red.shade600,
         );
       }
     } finally {

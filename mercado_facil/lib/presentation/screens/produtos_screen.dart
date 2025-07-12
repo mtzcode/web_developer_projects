@@ -10,6 +10,7 @@ import '../../data/services/carrinho_provider.dart';
 import '../../data/services/user_provider.dart';
 import '../../data/models/produto.dart';
 import 'ofertas_screen.dart';
+import '../../core/utils/snackbar_utils.dart';
 
 class ProdutosScreen extends StatefulWidget {
   const ProdutosScreen({super.key});
@@ -105,11 +106,11 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
     } catch (e) {
       setState(() => _loading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao carregar produtos: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showAppSnackBar(
+          context,
+          'Erro ao carregar produtos: $e',
+          icon: Icons.error,
+          backgroundColor: Colors.red.shade600,
         );
       }
     }
@@ -125,20 +126,20 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
       });
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Produtos atualizados com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
+        showAppSnackBar(
+          context,
+          'Produtos atualizados com sucesso!',
+          icon: Icons.check_circle,
+          backgroundColor: Colors.green.shade600,
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao atualizar produtos: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showAppSnackBar(
+          context,
+          'Erro ao atualizar produtos: $e',
+          icon: Icons.error,
+          backgroundColor: Colors.red.shade600,
         );
       }
     }
@@ -227,11 +228,11 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
     } catch (e) {
       setState(() => _carregandoMais = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao carregar mais produtos: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showAppSnackBar(
+          context,
+          'Erro ao carregar mais produtos: $e',
+          icon: Icons.error,
+          backgroundColor: Colors.red.shade600,
         );
       }
     }
@@ -470,14 +471,11 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
                                         produto: produto,
                                         onAdicionarAoCarrinho: () {
                                           Provider.of<CarrinhoProvider>(context, listen: false).adicionarProduto(produto);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                '${produto.nome} adicionado ao carrinho!',
-                                                style: const TextStyle(color: Colors.white),
-                                              ),
-                                              backgroundColor: colorScheme.primary,
-                                            ),
+                                          showAppSnackBar(
+                                            context,
+                                            '${produto.nome} adicionado ao carrinho!',
+                                            icon: Icons.check_circle,
+                                            backgroundColor: Colors.green.shade600,
                                           );
                                         },
                                         onToggleFavorito: () {
@@ -897,14 +895,11 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
                         produto: produto,
                         onAdicionarAoCarrinho: () {
                           Provider.of<CarrinhoProvider>(context, listen: false).adicionarProduto(produto);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                '${produto.nome} adicionado ao carrinho!',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              backgroundColor: colorScheme.primary,
-                            ),
+                          showAppSnackBar(
+                            context,
+                            '${produto.nome} adicionado ao carrinho!',
+                            icon: Icons.check_circle,
+                            backgroundColor: Colors.green.shade600,
                           );
                         },
                         onToggleFavorito: () {

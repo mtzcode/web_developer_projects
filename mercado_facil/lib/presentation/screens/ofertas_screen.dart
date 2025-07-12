@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../data/models/produto.dart';
 import '../../data/services/carrinho_provider.dart';
 import '../widgets/produto_card.dart';
+import '../../core/utils/snackbar_utils.dart';
 
 class OfertasScreen extends StatelessWidget {
   final List<Produto> produtos;
@@ -37,14 +38,11 @@ class OfertasScreen extends StatelessWidget {
                     produto: produto,
                     onAdicionarAoCarrinho: () {
                       Provider.of<CarrinhoProvider>(context, listen: false).adicionarProduto(produto);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${produto.nome} adicionado ao carrinho!',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          backgroundColor: colorScheme.primary,
-                        ),
+                      showAppSnackBar(
+                        context,
+                        '${produto.nome} adicionado ao carrinho!',
+                        icon: Icons.check_circle,
+                        backgroundColor: Colors.green.shade600,
                       );
                     },
                     onToggleFavorito: () {

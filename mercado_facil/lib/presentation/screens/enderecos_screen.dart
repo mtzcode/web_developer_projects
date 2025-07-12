@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../data/services/user_provider.dart';
 import '../../data/services/endereco_service.dart';
 import '../../core/utils/validators.dart';
+import '../../core/utils/snackbar_utils.dart';
 
 class EnderecosScreen extends StatefulWidget {
   const EnderecosScreen({super.key});
@@ -83,26 +84,26 @@ class _EnderecosScreenState extends State<EnderecosScreen> {
           ufController.text = endereco.uf;
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Endereço encontrado!'),
-            backgroundColor: Colors.green,
-          ),
+        showAppSnackBar(
+          context,
+          'Endereço encontrado!',
+          icon: Icons.check_circle,
+          backgroundColor: Colors.green.shade600,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('CEP não encontrado!'),
-            backgroundColor: Colors.orange,
-          ),
+        showAppSnackBar(
+          context,
+          'CEP não encontrado!',
+          icon: Icons.warning,
+          backgroundColor: Colors.orange.shade600,
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao buscar CEP: $e'),
-          backgroundColor: Colors.red,
-        ),
+      showAppSnackBar(
+        context,
+        'Erro ao buscar CEP: $e',
+        icon: Icons.error,
+        backgroundColor: Colors.red.shade600,
       );
     } finally {
       setState(() { isLoading = false; });
@@ -132,20 +133,20 @@ class _EnderecosScreenState extends State<EnderecosScreen> {
       await userProvider.atualizarDadosUsuario(dadosEndereco);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Endereço atualizado com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
+        showAppSnackBar(
+          context,
+          'Endereço atualizado com sucesso!',
+          icon: Icons.check_circle,
+          backgroundColor: Colors.green.shade600,
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao atualizar endereço: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showAppSnackBar(
+          context,
+          'Erro ao atualizar endereço: $e',
+          icon: Icons.error,
+          backgroundColor: Colors.red.shade600,
         );
       }
     } finally {

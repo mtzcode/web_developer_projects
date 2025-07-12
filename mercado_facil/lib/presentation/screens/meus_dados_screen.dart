@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import '../../data/services/user_provider.dart';
 import '../../core/utils/validators.dart';
+import '../../core/utils/snackbar_utils.dart';
 
 class MeusDadosScreen extends StatefulWidget {
   const MeusDadosScreen({super.key});
@@ -169,20 +170,20 @@ class _MeusDadosScreenState extends State<MeusDadosScreen> {
       await userProvider.atualizarDadosUsuario(dadosAtualizados);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Dados atualizados com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
+        showAppSnackBar(
+          context,
+          'Dados atualizados com sucesso!',
+          icon: Icons.check_circle,
+          backgroundColor: Colors.green.shade600,
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao atualizar dados: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showAppSnackBar(
+          context,
+          'Erro ao atualizar dados: $e',
+          icon: Icons.error,
+          backgroundColor: Colors.red.shade600,
         );
       }
     } finally {

@@ -5,6 +5,7 @@ import '../../data/services/carrinho_provider.dart';
 import '../../data/services/user_provider.dart';
 import '../../data/models/pedido.dart';
 import '../../data/models/usuario.dart';
+import '../../core/utils/snackbar_utils.dart';
 
 class ConfirmacaoPedidoScreen extends StatefulWidget {
   const ConfirmacaoPedidoScreen({Key? key}) : super(key: key);
@@ -823,18 +824,18 @@ class _ConfirmacaoPedidoScreenState extends State<ConfirmacaoPedidoScreen> {
       carrinhoProvider.limparCarrinho();
       
       // Mostrar sucesso
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Pedido realizado com sucesso! Acesse "Meus Pedidos" no menu para acompanhar.'),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 4),
-          action: SnackBarAction(
-            label: 'Ver Pedidos',
-            textColor: Colors.white,
-            onPressed: () {
-              Navigator.pushNamed(context, '/pedidos');
-            },
-          ),
+      showAppSnackBar(
+        context,
+        'Pedido realizado com sucesso! Acesse "Meus Pedidos" no menu para acompanhar.',
+        icon: Icons.check_circle,
+        backgroundColor: Colors.green.shade600,
+        duration: Duration(seconds: 2),
+        action: SnackBarAction(
+          label: 'Ver Pedidos',
+          textColor: Colors.white,
+          onPressed: () {
+            Navigator.of(context).pushNamedAndRemoveUntil('/pedidos', (route) => false);
+          },
         ),
       );
 
@@ -844,11 +845,11 @@ class _ConfirmacaoPedidoScreenState extends State<ConfirmacaoPedidoScreen> {
         (route) => false,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao finalizar pedido: ${pedidosProvider.erro}'),
-          backgroundColor: Colors.red,
-        ),
+      showAppSnackBar(
+        context,
+        'Erro ao finalizar pedido: ${pedidosProvider.erro}',
+        icon: Icons.error,
+        backgroundColor: Colors.red.shade600,
       );
     }
   }

@@ -32,6 +32,7 @@ import 'data/services/user_provider.dart';
 import 'data/services/pedidos_provider.dart';
 import 'firebase_options.dart';
 import 'core/responsive/responsive_tester.dart';
+import 'core/utils/snackbar_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -116,6 +117,7 @@ class MyApp extends StatelessWidget {
         title: 'Mercado Fácil',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
+        navigatorKey: appNavigatorKey, // Usar navigatorKey global
         home: const AuthWrapper(),
         routes: {
           '/login': (context) => const LoginScreen(),

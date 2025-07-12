@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/services/firestore_auth_service.dart';
 import '../../core/utils/validators.dart';
+import '../../core/utils/snackbar_utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -93,19 +94,12 @@ class _LoginScreenState extends State<LoginScreen> {
           mensagemErro = 'Erro de conexão. Verifique sua internet.';
         }
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(mensagemErro),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 4),
-            action: SnackBarAction(
-              label: 'OK',
-              textColor: Colors.white,
-              onPressed: () {
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              },
-            ),
-          ),
+        showAppSnackBar(
+          context,
+          mensagemErro,
+          icon: Icons.error,
+          backgroundColor: Colors.red.shade700,
+          duration: Duration(seconds: 3),
         );
       }
     } finally {

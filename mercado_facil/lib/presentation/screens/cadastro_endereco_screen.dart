@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../data/services/user_provider.dart';
 import '../../data/services/endereco_service.dart';
 import '../../core/utils/validators.dart';
+import '../../core/utils/snackbar_utils.dart';
 
 class CadastroEnderecoScreen extends StatefulWidget {
   const CadastroEnderecoScreen({super.key});
@@ -67,26 +68,26 @@ class _CadastroEnderecoScreenState extends State<CadastroEnderecoScreen> {
           ufController.text = endereco.uf;
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Endereço encontrado!'),
-            backgroundColor: Colors.green,
-          ),
+        showAppSnackBar(
+          context,
+          'Endereço encontrado!',
+          icon: Icons.check_circle,
+          backgroundColor: Colors.green.shade600,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('CEP não encontrado!'),
-            backgroundColor: Colors.orange,
-          ),
+        showAppSnackBar(
+          context,
+          'CEP não encontrado!',
+          icon: Icons.warning,
+          backgroundColor: Colors.orange.shade600,
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao buscar CEP: $e'),
-          backgroundColor: Colors.red,
-        ),
+      showAppSnackBar(
+        context,
+        'Erro ao buscar CEP: $e',
+        icon: Icons.error,
+        backgroundColor: Colors.red.shade600,
       );
     } finally {
       setState(() { isLoading = false; });
@@ -115,11 +116,11 @@ class _CadastroEnderecoScreenState extends State<CadastroEnderecoScreen> {
       await userProvider.adicionarEndereco(novoEndereco);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Endereço adicionado com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
+        showAppSnackBar(
+          context,
+          'Endereço adicionado com sucesso!',
+          icon: Icons.check_circle,
+          backgroundColor: Colors.green.shade600,
         );
         
         // Retornar true para indicar sucesso
@@ -127,11 +128,11 @@ class _CadastroEnderecoScreenState extends State<CadastroEnderecoScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao adicionar endereço: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showAppSnackBar(
+          context,
+          'Erro ao adicionar endereço: $e',
+          icon: Icons.error,
+          backgroundColor: Colors.red.shade600,
         );
       }
     } finally {

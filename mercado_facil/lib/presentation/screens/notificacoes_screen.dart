@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/snackbar_utils.dart';
 
 class NotificacoesScreen extends StatefulWidget {
   const NotificacoesScreen({super.key});
@@ -164,8 +165,11 @@ class _NotificacoesScreenState extends State<NotificacoesScreen> {
               ),
               onPressed: () {
                 // TODO: Salvar preferências
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Preferências salvas!')),
+                showAppSnackBar(
+                  context,
+                  'Preferências salvas!',
+                  icon: Icons.check_circle,
+                  backgroundColor: Colors.green.shade600,
                 );
               },
               child: const Text('Salvar preferências'),
