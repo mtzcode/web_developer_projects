@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mercado_facil/core/errors/error_handler.dart';
-import 'package:mercado_facil/core/errors/app_exception.dart';
+import 'package:mercado_facil/core/error/error_handler.dart';
+import 'package:mercado_facil/core/exceptions/app_exception.dart';
 
 void main() {
   group('ErrorHandler', () {

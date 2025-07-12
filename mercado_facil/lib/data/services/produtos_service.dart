@@ -1,7 +1,7 @@
 import '../models/produto.dart';
-import '../datasources/cache_service.dart';
-import '../datasources/memory_cache_service.dart';
-import '../datasources/firestore_service.dart';
+import 'cache_service.dart';
+import 'memory_cache_service.dart';
+import 'firestore_service.dart';
 
 class ProdutosService {
   static final FirestoreService _firestoreService = FirestoreService();
@@ -168,11 +168,56 @@ class ProdutosService {
   }
 
   static Future<List<Produto>> getProdutosPaginados({required int page, int pageSize = 8, bool forcarAtualizacao = false}) async {
-    final todos = await carregarProdutosComCache(forcarAtualizacao: forcarAtualizacao);
-    final start = (page - 1) * pageSize;
-    if (start >= todos.length) return [];
-    final end = (start + pageSize) > todos.length ? todos.length : (start + pageSize);
-    return todos.sublist(start, end);
+    try {
+      // Se forçar atualização ou não tem cache válido, carrega do Firestore
+      if (forcarAtualizacao || !await CacheService.isCacheValido()) {
+        return await _getProdutosPaginadosDoFirestore(page: page, pageSize: pageSize);
+      }
+
+      // Tenta carregar do cache primeiro
+      final todos = await carregarProdutosComCache(forcarAtualizacao: false);
+      final start = (page - 1) * pageSize;
+      if (start >= todos.length) return [];
+      final end = (start + pageSize) > todos.length ? todos.length : (start + pageSize);
+      return todos.sublist(start, end);
+    } catch (e) {
+      // Fallback para dados mock paginados
+      final todos = getProdutosMock();
+      final start = (page - 1) * pageSize;
+      if (start >= todos.length) return [];
+      final end = (start + pageSize) > todos.length ? todos.length : (start + pageSize);
+      return todos.sublist(start, end);
+    }
+  }
+
+  // Carrega produtos paginados diretamente do Firestore
+  static Future<List<Produto>> _getProdutosPaginadosDoFirestore({required int page, int pageSize = 8}) async {
+    try {
+      final produtosData = await _firestoreService.getProdutosPaginados(page: page, pageSize: pageSize);
+      return produtosData;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // Verifica se há mais produtos disponíveis
+  static Future<bool> temMaisProdutos({required int page, int pageSize = 8}) async {
+    try {
+      final produtos = await _getProdutosPaginadosDoFirestore(page: page + 1, pageSize: pageSize);
+      return produtos.isNotEmpty;
+    } catch (e) {
+      // Fallback: verifica no cache
+      try {
+        final todos = await carregarProdutosComCache(forcarAtualizacao: false);
+        final start = page * pageSize;
+        return start < todos.length;
+      } catch (cacheError) {
+        // Fallback final: verifica nos dados mock
+        final todos = getProdutosMock();
+        final start = page * pageSize;
+        return start < todos.length;
+      }
+    }
   }
 
   // Buscar produtos por categoria

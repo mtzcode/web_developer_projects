@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/datasources/firestore_auth_service.dart';
+import '../../data/services/firestore_auth_service.dart';
 import '../../core/utils/validators.dart';
 
 class LoginScreen extends StatefulWidget {

@@ -4,8 +4,8 @@ import '../models/pedido.dart';
 import '../models/carrinho_item.dart';
 import '../models/usuario.dart';
 import '../../core/utils/logger.dart';
-import '../../core/errors/app_exception.dart';
-import '../../core/errors/error_handler.dart';
+import '../../core/exceptions/app_exception.dart';
+import '../../core/error/error_handler.dart';
 
 class PedidosService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

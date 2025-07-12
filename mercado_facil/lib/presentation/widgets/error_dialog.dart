@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/errors/app_exception.dart';
+import '../../core/exceptions/app_exception.dart';
 
 /// Widget para exibir diálogos de erro padronizados
 class ErrorDialog extends StatelessWidget {

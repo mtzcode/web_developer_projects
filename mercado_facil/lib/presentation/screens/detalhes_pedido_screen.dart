@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../data/providers/pedidos_provider.dart';
+import '../../data/services/pedidos_provider.dart';
 import '../../data/models/pedido.dart';
 import '../widgets/pedido_status_widget.dart';
 

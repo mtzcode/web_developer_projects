@@ -12,6 +12,41 @@ class FirestoreService {
 
   // ===== PRODUTOS =====
 
+  // Buscar produtos paginados
+  Future<List<Produto>> getProdutosPaginados({required int page, int pageSize = 8}) async {
+    try {
+      final startAfter = (page - 1) * pageSize;
+      
+      Query query = _produtos.orderBy('nome');
+      
+      // Se não é a primeira página, precisa do último documento da página anterior
+      if (page > 1) {
+        // Para paginação real, precisaríamos do último documento da página anterior
+        // Por enquanto, vamos usar offset (não recomendado para grandes datasets)
+        query = query.offset(startAfter);
+      }
+      
+      final snapshot = await query.limit(pageSize).get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return Produto(
+          id: doc.id,
+          nome: data['nome'] ?? '',
+          preco: (data['preco'] ?? 0).toDouble(),
+          imagemUrl: data['imagemUrl'] ?? '',
+          descricao: data['descricao'],
+          categoria: data['categoria'],
+          destaque: data['destaque'],
+          precoPromocional: data['precoPromocional']?.toDouble(),
+          favorito: false,
+        );
+      }).toList();
+    } catch (e) {
+      throw Exception('Erro ao carregar produtos paginados');
+    }
+  }
+
   // Buscar todos os produtos
   Future<List<Produto>> getProdutos() async {
     try {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/produto.dart';
-import '../../data/providers/carrinho_provider.dart';
+import '../../data/services/carrinho_provider.dart';
 import '../widgets/produto_card.dart';
 
 class OfertasScreen extends StatelessWidget {
@@ -11,7 +11,7 @@ class OfertasScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final ofertas = produtos.where((p) => p.destaque == 'oferta').toList();
+    final ofertas = produtos.where((p) => (p.destaque ?? '').toLowerCase() == 'oferta').toList();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ofertas'),
@@ -46,6 +46,10 @@ class OfertasScreen extends StatelessWidget {
                           backgroundColor: colorScheme.primary,
                         ),
                       );
+                    },
+                    onToggleFavorito: () {
+                      (context as Element).markNeedsBuild();
+                      produto.favorito = !(produto.favorito ?? false);
                     },
                   );
                 },

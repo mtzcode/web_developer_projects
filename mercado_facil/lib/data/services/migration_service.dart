@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../datasources/firestore_service.dart';
+import 'firestore_service.dart';
 import '../models/produto.dart';
 
 class MigrationService {

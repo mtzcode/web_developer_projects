@@ -4,9 +4,10 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../data/services/produtos_service.dart';
 import '../widgets/produto_card.dart';
 import '../widgets/cache_status_widget.dart';
+import '../widgets/lazy_loading_list.dart';
 import 'package:provider/provider.dart';
-import '../../data/providers/carrinho_provider.dart';
-import '../../data/providers/user_provider.dart';
+import '../../data/services/carrinho_provider.dart';
+import '../../data/services/user_provider.dart';
 import '../../data/models/produto.dart';
 import 'ofertas_screen.dart';
 
@@ -92,9 +93,13 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
     setState(() => _loading = true);
     
     try {
-      final produtos = await ProdutosService.carregarProdutosComCache();
+      final produtos = await ProdutosService.getProdutosPaginados(page: 1, pageSize: 8);
+      final temMais = await ProdutosService.temMaisProdutos(page: 1, pageSize: 8);
+      
       setState(() {
         _produtosExibidos = produtos;
+        _paginaAtual = 1;
+        _temMaisProdutos = temMais;
         _loading = false;
       });
     } catch (e) {
@@ -204,22 +209,19 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
   }
 
   Future<void> _carregarMaisProdutos() async {
+    if (_carregandoMais || !_temMaisProdutos) return;
+    
     setState(() => _carregandoMais = true);
     
     try {
-      final novos = await ProdutosService.getProdutosPaginados(
-        page: _paginaAtual, 
-        pageSize: 8,
-        forcarAtualizacao: false, // Usa cache se disponível
-      );
+      final proximaPagina = _paginaAtual + 1;
+      final maisProdutos = await ProdutosService.getProdutosPaginados(page: proximaPagina, pageSize: 8);
+      final temMais = await ProdutosService.temMaisProdutos(page: proximaPagina, pageSize: 8);
       
       setState(() {
-        if (novos.isEmpty) {
-          _temMaisProdutos = false;
-        } else {
-          _produtosExibidos.addAll(novos);
-          _paginaAtual++;
-        }
+        _produtosExibidos.addAll(maisProdutos);
+        _paginaAtual = proximaPagina;
+        _temMaisProdutos = temMais;
         _carregandoMais = false;
       });
     } catch (e) {
@@ -256,9 +258,9 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
       // se algum filtro está ativo, mostra apenas os que atendem aos filtros ativos
       bool matchDestaque = true;
       if (_filtrarOferta || _filtrarNovo || _filtrarMaisVendido) {
-        matchDestaque = (_filtrarOferta && produto.destaque == 'oferta') ||
-                       (_filtrarNovo && produto.destaque == 'novo') ||
-                       (_filtrarMaisVendido && produto.destaque == 'mais vendido');
+        matchDestaque = (_filtrarOferta && (produto.destaque ?? '').toLowerCase() == 'oferta') ||
+                       (_filtrarNovo && (produto.destaque ?? '').toLowerCase() == 'novo') ||
+                       (_filtrarMaisVendido && (produto.destaque ?? '').toLowerCase() == 'mais vendido');
       }
       return matchNome && matchCategoria && matchPreco && matchDestaque;
     }).toList();
@@ -873,32 +875,43 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
             const SizedBox(height: 15),
             // Grid de produtos filtrados
             Expanded(
-              child: GridView.builder(
-                controller: _scrollController,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.8,
-                  crossAxisSpacing: 24,
-                  mainAxisSpacing: 24,
-                ),
-                itemCount: produtosFiltrados.length + (_carregandoMais ? 2 : 0),
-                itemBuilder: (context, index) {
-                  if (index >= produtosFiltrados.length) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  final produto = produtosFiltrados[index];
-                  return ProdutoCard(
-                    produto: produto,
-                    onAdicionarAoCarrinho: () {
-                      Provider.of<CarrinhoProvider>(context, listen: false).adicionarProduto(produto);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${produto.nome} adicionado ao carrinho!',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          backgroundColor: colorScheme.primary,
-                        ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final screenWidth = constraints.maxWidth;
+                  final crossAxisCount = (screenWidth / 150).floor().clamp(2, 4);
+                  return GridView.builder(
+                    controller: _scrollController,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      mainAxisSpacing: 24,
+                      crossAxisSpacing: 24,
+                      childAspectRatio: 0.65, // Igual ao grid funcional anterior
+                    ),
+                    itemCount: produtosFiltrados.length + (_carregandoMais ? 2 : 0),
+                    itemBuilder: (context, index) {
+                      if (index >= produtosFiltrados.length) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final produto = produtosFiltrados[index];
+                      return ProdutoCard(
+                        produto: produto,
+                        onAdicionarAoCarrinho: () {
+                          Provider.of<CarrinhoProvider>(context, listen: false).adicionarProduto(produto);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${produto.nome} adicionado ao carrinho!',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              backgroundColor: colorScheme.primary,
+                            ),
+                          );
+                        },
+                        onToggleFavorito: () {
+                          setState(() {
+                            produto.favorito = !(produto.favorito ?? false);
+                          });
+                        },
                       );
                     },
                   );

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_app_check/firebase_app_check.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/accessibility_theme.dart';
 import 'core/utils/logger.dart';
-import 'core/errors/error_handler.dart';
+import 'core/error/error_handler.dart';
 import 'presentation/widgets/auth_wrapper.dart';
 import 'presentation/widgets/error_dialog.dart';
 import 'presentation/widgets/loading_overlay.dart';
+import 'presentation/widgets/accessibility_tester.dart';
+import 'presentation/widgets/screen_reader_labels.dart';
 import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/cadastro01_screen.dart';
 import 'presentation/screens/cadastro02_screen.dart';
@@ -22,11 +26,12 @@ import 'presentation/screens/redefinir_senha_screen.dart';
 import 'presentation/screens/pedidos_screen.dart';
 import 'presentation/screens/detalhes_pedido_screen.dart';
 import 'presentation/screens/confirmacao_pedido_screen.dart';
-import 'data/providers/carrinho_provider.dart';
-import 'data/providers/user_provider.dart';
-import 'data/providers/pedidos_provider.dart';
-import 'data/datasources/firestore_auth_service.dart';
+import 'data/services/carrinho_provider.dart';
+import 'data/services/firestore_auth_service.dart';
+import 'data/services/user_provider.dart';
+import 'data/services/pedidos_provider.dart';
 import 'firebase_options.dart';
+import 'core/responsive/responsive_tester.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -109,6 +114,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Mercado Fácil',
+        debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         home: const AuthWrapper(),
         routes: {
@@ -126,6 +132,20 @@ class MyApp extends StatelessWidget {
           '/redefinir_senha': (context) => const RedefinirSenhaScreen(),
           '/pedidos': (context) => const PedidosScreen(),
           '/confirmacao-pedido': (context) => const ConfirmacaoPedidoScreen(),
+        },
+        builder: (context, child) {
+          return ResponsiveTester(
+            enabled: kDebugMode,
+            child: MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: MediaQuery.of(context).textScaler.clamp(
+                  minScaleFactor: 0.8,
+                  maxScaleFactor: 1.5,
+                ),
+              ),
+              child: child!,
+            ),
+          );
         },
       ),
     );

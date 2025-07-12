@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../data/datasources/firestore_auth_service.dart';
+import '../../data/services/firestore_auth_service.dart';
 import '../../core/utils/validators.dart';
-import '../../data/providers/user_provider.dart';
 
 class Cadastro01Screen extends StatefulWidget {
   const Cadastro01Screen({super.key});
