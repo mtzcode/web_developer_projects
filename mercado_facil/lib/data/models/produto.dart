@@ -1,14 +1,47 @@
+/// Modelo que representa um produto no sistema.
+/// 
+/// Esta classe encapsula todas as informações de um produto,
+/// incluindo dados básicos, preços, imagens e status de favorito.
+/// É utilizada em toda a aplicação para exibição e manipulação de produtos.
 class Produto {
+  /// Identificador único do produto
   final String id;
+  
+  /// Nome do produto
   final String nome;
+  
+  /// Preço original do produto
   final double preco;
+  
+  /// URL da imagem do produto
   final String imagemUrl;
+  
+  /// Descrição detalhada do produto (opcional)
   final String? descricao;
+  
+  /// Categoria do produto (ex: 'Frutas', 'Laticínios')
   final String? categoria;
-  final String? destaque; // 'mais vendido', 'novo' ou null
+  
+  /// Destaque do produto ('mais vendido', 'novo', 'oferta' ou null)
+  final String? destaque;
+  
+  /// Preço promocional do produto (opcional)
   final double? precoPromocional;
+  
+  /// Indica se o produto está nos favoritos do usuário
   bool favorito;
 
+  /// Construtor do Produto
+  /// 
+  /// [id] - Identificador único obrigatório
+  /// [nome] - Nome do produto obrigatório
+  /// [preco] - Preço original obrigatório
+  /// [imagemUrl] - URL da imagem obrigatória
+  /// [descricao] - Descrição opcional
+  /// [categoria] - Categoria opcional
+  /// [destaque] - Destaque opcional
+  /// [precoPromocional] - Preço promocional opcional
+  /// [favorito] - Status de favorito (padrão: false)
   Produto({
     required this.id,
     required this.nome,
@@ -21,7 +54,22 @@ class Produto {
     bool? favorito,
   }) : favorito = favorito ?? false;
 
-  // Método para criar uma cópia com campos modificados
+  /// Cria uma cópia do produto com campos modificados.
+  /// 
+  /// Este método é útil para criar variações do produto sem modificar
+  /// a instância original, mantendo a imutabilidade.
+  /// 
+  /// [id] - Novo ID (opcional)
+  /// [nome] - Novo nome (opcional)
+  /// [preco] - Novo preço (opcional)
+  /// [imagemUrl] - Nova URL de imagem (opcional)
+  /// [descricao] - Nova descrição (opcional)
+  /// [categoria] - Nova categoria (opcional)
+  /// [destaque] - Novo destaque (opcional)
+  /// [precoPromocional] - Novo preço promocional (opcional)
+  /// [favorito] - Novo status de favorito (opcional)
+  /// 
+  /// Retorna uma nova instância de [Produto] com os campos modificados.
   Produto copyWith({
     String? id,
     String? nome,
@@ -46,7 +94,12 @@ class Produto {
     );
   }
 
-  // Converter Produto para Map (para salvar no Firestore)
+  /// Converte o produto para um Map para persistência no Firestore.
+  /// 
+  /// Este método serializa todos os campos do produto em um formato
+  /// compatível com o Firestore, incluindo conversões de tipos necessárias.
+  /// 
+  /// Retorna um [Map<String, dynamic>] com todos os dados do produto.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -61,7 +114,15 @@ class Produto {
     };
   }
 
-  // Criar Produto a partir de Map (para carregar do Firestore)
+  /// Cria um produto a partir de um Map do Firestore.
+  /// 
+  /// Este factory method deserializa os dados do Firestore e cria
+  /// uma instância válida de Produto, tratando valores nulos e
+  /// convertendo tipos conforme necessário.
+  /// 
+  /// [map] - Map contendo os dados do produto
+  /// 
+  /// Retorna uma nova instância de [Produto].
   factory Produto.fromMap(Map<String, dynamic> map) {
     return Produto(
       id: map['id'] ?? '',
@@ -77,6 +138,35 @@ class Produto {
       favorito: map['favorito'] ?? false,
     );
   }
+
+  /// Verifica se o produto está em promoção.
+  /// 
+  /// Um produto está em promoção quando possui um preço promocional
+  /// definido e diferente do preço original.
+  /// 
+  /// Retorna [true] se o produto está em promoção, [false] caso contrário.
+  bool get isPromocao => precoPromocional != null && precoPromocional! < preco;
+
+  /// Obtém o preço atual do produto.
+  /// 
+  /// Se o produto está em promoção, retorna o preço promocional.
+  /// Caso contrário, retorna o preço original.
+  /// 
+  /// Retorna o preço atual como [double].
+  double get precoAtual => precoPromocional ?? preco;
+
+  /// Calcula o percentual de desconto da promoção.
+  /// 
+  /// Retorna o percentual de desconto como [double] ou 0.0 se não há promoção.
+  double get percentualDesconto {
+    if (!isPromocao) return 0.0;
+    return ((preco - precoPromocional!) / preco * 100).roundToDouble();
+  }
+
+  /// Verifica se o produto possui destaque.
+  /// 
+  /// Retorna [true] se o produto tem algum tipo de destaque, [false] caso contrário.
+  bool get hasDestaque => destaque != null && destaque!.isNotEmpty;
 
   @override
   String toString() {

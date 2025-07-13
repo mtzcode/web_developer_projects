@@ -3,10 +3,26 @@ import 'cache_service.dart';
 import 'memory_cache_service.dart';
 import 'firestore_service.dart';
 
+/// Serviço responsável por gerenciar produtos com estratégia de cache inteligente.
+/// 
+/// Este serviço implementa uma estratégia de cache em múltiplas camadas:
+/// 1. Cache local (SharedPreferences) - persistente
+/// 2. Cache em memória - rápido acesso
+/// 3. Firestore - fonte de dados principal
+/// 4. Dados mock - fallback final
+/// 
+/// A estratégia garante que o app funcione mesmo offline e tenha
+/// performance otimizada com dados sempre atualizados quando possível.
 class ProdutosService {
+  /// Instância do serviço Firestore para operações de banco de dados
   static final FirestoreService _firestoreService = FirestoreService();
 
-  // Dados mock para fallback
+  /// Retorna uma lista de produtos mock para uso como fallback.
+  /// 
+  /// Estes dados são utilizados quando todas as outras fontes falham,
+  /// garantindo que o app sempre tenha produtos para exibir.
+  /// 
+  /// Retorna [List<Produto>] com dados de exemplo.
   static List<Produto> getProdutosMock() {
     return [
       Produto(
@@ -83,7 +99,22 @@ class ProdutosService {
     ];
   }
 
-  // Carrega produtos com cache inteligente e Firestore
+  /// Carrega produtos com estratégia de cache inteligente.
+  /// 
+  /// Implementa uma estratégia de fallback em cascata:
+  /// 1. Tenta cache local (se válido e não forçar atualização)
+  /// 2. Tenta cache em memória (se válido)
+  /// 3. Carrega do Firestore (fonte principal)
+  /// 4. Salva no cache local e memória
+  /// 5. Fallback para cache local (mesmo expirado)
+  /// 6. Fallback para cache em memória
+  /// 7. Fallback para dados mock
+  /// 
+  /// [forcarAtualizacao] - Se true, ignora cache e força atualização do Firestore
+  /// 
+  /// Retorna [List<Produto>] com os produtos carregados.
+  /// 
+  /// Lança [Exception] apenas se todos os fallbacks falharem.
   static Future<List<Produto>> carregarProdutosComCache({bool forcarAtualizacao = false}) async {
     try {
       // Se não forçar atualização, tenta carregar do cache primeiro
@@ -152,7 +183,14 @@ class ProdutosService {
     }
   }
 
-  // Carrega produtos do Firestore
+  /// Carrega produtos diretamente do Firestore.
+  /// 
+  /// Método privado que encapsula a lógica de carregamento do Firestore.
+  /// Se o Firestore não retornar dados, usa dados mock como fallback.
+  /// 
+  /// Retorna [List<Produto>] do Firestore ou dados mock.
+  /// 
+  /// Lança [Exception] se houver erro na comunicação com Firestore.
   static Future<List<Produto>> _carregarProdutosDoFirestore() async {
     try {
       final produtosData = await _firestoreService.getProdutos();
@@ -167,6 +205,16 @@ class ProdutosService {
     }
   }
 
+  /// Carrega produtos com paginação.
+  /// 
+  /// Implementa paginação inteligente que tenta usar cache quando possível
+  /// e só vai ao Firestore quando necessário (cache expirado ou forçar atualização).
+  /// 
+  /// [page] - Número da página (começa em 1)
+  /// [pageSize] - Quantidade de itens por página (padrão: 8)
+  /// [forcarAtualizacao] - Se true, ignora cache e força atualização
+  /// 
+  /// Retorna [List<Produto>] da página solicitada.
   static Future<List<Produto>> getProdutosPaginados({required int page, int pageSize = 8, bool forcarAtualizacao = false}) async {
     try {
       // Se forçar atualização ou não tem cache válido, carrega do Firestore
@@ -190,7 +238,16 @@ class ProdutosService {
     }
   }
 
-  // Carrega produtos paginados diretamente do Firestore
+  /// Carrega produtos paginados diretamente do Firestore.
+  /// 
+  /// Método privado que encapsula a lógica de paginação do Firestore.
+  /// 
+  /// [page] - Número da página
+  /// [pageSize] - Quantidade de itens por página
+  /// 
+  /// Retorna [List<Produto>] da página solicitada.
+  /// 
+  /// Lança [Exception] se houver erro na comunicação com Firestore.
   static Future<List<Produto>> _getProdutosPaginadosDoFirestore({required int page, int pageSize = 8}) async {
     try {
       final produtosData = await _firestoreService.getProdutosPaginados(page: page, pageSize: pageSize);
