@@ -6,7 +6,26 @@ class Validators {
     }
     // Regex mais rigoroso para e-mail
     final regex = RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
-    if (!regex.hasMatch(value.trim())) {
+    final trimmedValue = value.trim();
+    
+    // Verificações adicionais para emails inválidos
+    if (!trimmedValue.contains('@')) {
+      return 'E-mail inválido';
+    }
+    if (!trimmedValue.contains('.')) {
+      return 'E-mail inválido';
+    }
+    if (trimmedValue.startsWith('@') || trimmedValue.endsWith('@')) {
+      return 'E-mail inválido';
+    }
+    if (trimmedValue.startsWith('.') || trimmedValue.endsWith('.')) {
+      return 'E-mail inválido';
+    }
+    if (trimmedValue.contains('..')) {
+      return 'E-mail inválido';
+    }
+    
+    if (!regex.hasMatch(trimmedValue)) {
       return 'E-mail inválido';
     }
     return null;

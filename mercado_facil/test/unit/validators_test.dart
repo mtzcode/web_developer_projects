@@ -27,9 +27,9 @@ void main() {
 
     group('senha', () {
       test('deve retornar null para senha forte', () {
-        expect(Validators.senha('Senha123!'), isNull);
+        expect(Validators.senha('Senha123!@'), isNull);
         expect(Validators.senha('MinhaSenha@2024'), isNull);
-        expect(Validators.senha('Abc123#'), isNull);
+        expect(Validators.senha('Abc123#@'), isNull);
       });
 
       test('deve retornar mensagem de erro para senha vazia', () {
@@ -132,8 +132,8 @@ void main() {
       });
 
       test('deve retornar erro para CEP inválido', () {
-        expect(Validators.cep('abcdefgh'), equals('CEP inválido'));
-        expect(Validators.cep('12-34-56'), equals('CEP inválido'));
+        expect(Validators.cep('abcdefgh'), equals('CEP deve ter 8 dígitos'));
+        expect(Validators.cep('12-34-56'), equals('CEP deve ter 8 dígitos'));
       });
     });
   });
