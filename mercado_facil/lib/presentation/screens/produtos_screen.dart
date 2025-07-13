@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../data/services/produtos_service.dart';
 import '../widgets/produto_card.dart';
-import '../widgets/cache_status_widget.dart';
 import '../widgets/lazy_loading_list.dart';
 import 'package:provider/provider.dart';
 import '../../data/services/carrinho_provider.dart';
@@ -280,23 +279,7 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
         ),
         actions: [
           // Indicador de cache
-          FutureBuilder<Map<String, dynamic>>(
-            future: ProdutosService.getCacheInfo(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data!['temCache']) {
-                return IconButton(
-                  icon: Icon(
-                    snapshot.data!['valido'] ? Icons.cloud_done : Icons.cloud_off,
-                    color: snapshot.data!['valido'] ? Colors.green : Colors.orange,
-                  ),
-                  onPressed: () {
-                    _mostrarInfoCache(snapshot.data!);
-                  },
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
+          // REMOVIDO: IconButton de status de cache
           Consumer<CarrinhoProvider>(
             builder: (context, carrinho, child) {
               int quantidade = carrinho.itens.fold(0, (soma, item) => soma + item.quantidade);
@@ -835,7 +818,7 @@ class _ProdutosScreenState extends State<ProdutosScreen> {
               ],
             ),
             // Widget de status do cache
-            const CacheStatusWidget(),
+            // REMOVIDO: const CacheStatusWidget(),
             const SizedBox(height: 15),
             // Lista horizontal de categorias
             SizedBox(

@@ -31,7 +31,6 @@ import 'data/services/firestore_auth_service.dart';
 import 'data/services/user_provider.dart';
 import 'data/services/pedidos_provider.dart';
 import 'firebase_options.dart';
-import 'core/responsive/responsive_tester.dart';
 import 'core/utils/snackbar_utils.dart';
 
 void main() async {
@@ -136,17 +135,14 @@ class MyApp extends StatelessWidget {
           '/confirmacao-pedido': (context) => const ConfirmacaoPedidoScreen(),
         },
         builder: (context, child) {
-          return ResponsiveTester(
-            enabled: kDebugMode,
-            child: MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: MediaQuery.of(context).textScaler.clamp(
-                  minScaleFactor: 0.8,
-                  maxScaleFactor: 1.5,
-                ),
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: MediaQuery.of(context).textScaler.clamp(
+                minScaleFactor: 0.8,
+                maxScaleFactor: 1.5,
               ),
-              child: child!,
             ),
+            child: child!,
           );
         },
       ),
